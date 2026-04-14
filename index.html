@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Starship Full-Stack Tracker</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -46,7 +47,8 @@
       <section class="panel">
         <h2>Launch Map Context</h2>
         <div id="map-context"></div>
-        <div id="map-canvas" aria-label="Map preview"></div>
+        <div id="live-map" aria-label="Starbase map"></div>
+        <div id="map-canvas" aria-label="Telemetry map preview"></div>
         <div id="map-legend"></div>
       </section>
     </main>
@@ -61,6 +63,7 @@
       </article>
     </template>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="app.js"></script>
   </body>
 </html>

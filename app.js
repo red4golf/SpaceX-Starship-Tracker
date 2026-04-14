@@ -1,5 +1,8 @@
 let dashboardState = null;
 const REFRESH_INTERVAL_MS = 60_000;
+const STARBASE_CENTER = { lat: 25.9971, lon: -97.1566 };
+let leafletMap = null;
+let leafletLayerGroup = null;
 
 async function fetchDashboardData() {
   const response = await fetch(`data/dashboard.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -174,6 +177,70 @@ function renderTimeline(data) {
   }
 }
 
+function distanceKm(lat1, lon1, lat2, lon2) {
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return 6371 * c;
+}
+
+function ensureLeafletMap() {
+  const mapEl = document.getElementById('live-map');
+  if (!mapEl || typeof L === 'undefined') {
+    return null;
+  }
+  if (!leafletMap) {
+    leafletMap = L.map('live-map').setView([STARBASE_CENTER.lat, STARBASE_CENTER.lon], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(leafletMap);
+    leafletLayerGroup = L.layerGroup().addTo(leafletMap);
+  }
+  return leafletMap;
+}
+
+function renderStarbaseMap(mapContext) {
+  const mapEl = document.getElementById('live-map');
+  const telemetryEl = document.getElementById('map-canvas');
+  mapEl.style.display = 'block';
+  telemetryEl.style.display = 'none';
+
+  const mapInstance = ensureLeafletMap();
+  if (!mapInstance) {
+    return 0;
+  }
+
+  leafletLayerGroup.clearLayers();
+
+  const starbaseMarker = L.marker([STARBASE_CENTER.lat, STARBASE_CENTER.lon]).bindPopup('Starbase Center');
+  leafletLayerGroup.addLayer(starbaseMarker);
+
+  const compoundPoints = mapContext.filter((m) => {
+    if (m.lat == null || m.lon == null) return false;
+    return distanceKm(m.lat, m.lon, STARBASE_CENTER.lat, STARBASE_CENTER.lon) <= 2.0;
+  });
+
+  for (const point of compoundPoints) {
+    const marker = L.marker([point.lat, point.lon]).bindPopup(`<strong>${point.site}</strong><br/>${point.description}`);
+    leafletLayerGroup.addLayer(marker);
+  }
+
+  mapInstance.setView([STARBASE_CENTER.lat, STARBASE_CENTER.lon], 15);
+  return compoundPoints.length;
+}
+
+function renderTelemetryCanvas() {
+  const mapEl = document.getElementById('live-map');
+  const telemetryEl = document.getElementById('map-canvas');
+  mapEl.style.display = 'none';
+  telemetryEl.style.display = 'block';
+}
+
 function projectPoints(points) {
   const lats = points.map((p) => p.lat);
   const lons = points.map((p) => p.lon);
@@ -229,14 +296,19 @@ function renderMap(mapContext, launchTelemetry, mode) {
     speed_kmh: p.speed_kmh
   }));
 
-  const isTelemetryView = ((mode === 'launch_day' || mode === 'post_launch') || launchTelemetry?.enabled === true) && telemetryTrack.length > 1;
-  const points = isTelemetryView ? telemetryTrack : contextPoints;
+  const isTelemetryView = (mode === 'launch_day' || mode === 'post_launch') && telemetryTrack.length > 1;
 
-  if (!points.length) {
-    canvas.innerHTML = '<p>No coordinate data available for map preview.</p>';
-    legend.innerHTML = '';
+  if (!isTelemetryView) {
+    const visibleCount = renderStarbaseMap(mapContext);
+    legend.innerHTML = `
+      <p><strong>Context map (non-launch day):</strong> centered on Starbase with zoom controls</p>
+      <p>Showing ${visibleCount} in-compound markers (<=2 km from Starbase). External locations are hidden until telemetry mode.</p>
+    `;
     return;
   }
+
+  renderTelemetryCanvas();
+  const points = telemetryTrack;
 
   const projected = projectPoints(points);
 
@@ -291,15 +363,6 @@ function renderMap(mapContext, launchTelemetry, mode) {
 
     const currentProjected = projected[projected.length - 1];
     canvas.innerHTML += `<div class="map-pulse" style="left:${currentProjected.x}%; top:${currentProjected.y}%"></div>`;
-  } else {
-    legend.innerHTML = `
-      <p><strong>Context map (non-launch day):</strong> ${projected.length} site points</p>
-      <ul>
-        ${projected
-          .map((p) => `<li>${p.label}: ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}</li>`)
-          .join('')}
-      </ul>
-    `;
   }
 }
 
