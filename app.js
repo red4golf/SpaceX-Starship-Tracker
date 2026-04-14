@@ -174,24 +174,7 @@ function renderTimeline(data) {
   }
 }
 
-function renderMap(mapContext) {
-  const map = document.getElementById('map-context');
-  map.innerHTML = mapContext
-    .map((m) => {
-      const coords = m.lat != null && m.lon != null ? ` (${m.lat.toFixed(3)}, ${m.lon.toFixed(3)})` : '';
-      return `<p><strong>📍 ${m.site}</strong>${coords}: ${m.description} · <a href="${m.source}" target="_blank" rel="noreferrer">source</a></p>`;
-    })
-    .join('');
-
-  const canvas = document.getElementById('map-canvas');
-  const legend = document.getElementById('map-legend');
-  const points = mapContext.filter((m) => m.lat != null && m.lon != null);
-  if (!points.length) {
-    canvas.innerHTML = '<p>No coordinate data available for map preview.</p>';
-    legend.innerHTML = '';
-    return;
-  }
-
+function projectPoints(points) {
   const lats = points.map((p) => p.lat);
   const lons = points.map((p) => p.lon);
   const minLat = Math.min(...lats);
@@ -202,39 +185,80 @@ function renderMap(mapContext) {
   const latRange = Math.max(maxLat - minLat, 0.2);
   const lonRange = Math.max(maxLon - minLon, 0.2);
 
-  const positioned = points.map((p) => {
-    const left = ((p.lon - minLon) / lonRange) * 100;
-    const top = 100 - ((p.lat - minLat) / latRange) * 100;
-    return { ...p, left, top };
-  });
+  return points.map((p) => ({
+    ...p,
+    x: ((p.lon - minLon) / lonRange) * 100,
+    y: 100 - ((p.lat - minLat) / latRange) * 100
+  }));
+}
 
-  const lines = positioned
-    .slice(1)
-    .map(
-      (p, idx) =>
-        `<line x1="${positioned[idx].left}%" y1="${positioned[idx].top}%" x2="${p.left}%" y2="${p.top}%" stroke="rgba(56,189,248,0.5)" stroke-width="2"/>`
-    )
+function renderMap(mapContext, launchTelemetry, mode) {
+  const map = document.getElementById('map-context');
+  map.innerHTML = mapContext
+    .map((m) => {
+      const coords = m.lat != null && m.lon != null ? ` (${m.lat.toFixed(3)}, ${m.lon.toFixed(3)})` : '';
+      return `<p><strong>📍 ${m.site}</strong>${coords}: ${m.description} · <a href="${m.source}" target="_blank" rel="noreferrer">source</a></p>`;
+    })
     .join('');
 
+  const canvas = document.getElementById('map-canvas');
+  const legend = document.getElementById('map-legend');
+
+  const contextPoints = mapContext
+    .filter((m) => m.lat != null && m.lon != null)
+    .map((m) => ({ label: m.site, lat: m.lat, lon: m.lon, type: 'site' }));
+  const telemetryTrack = (launchTelemetry?.track || []).map((p) => ({
+    label: p.t || 'Track',
+    lat: p.lat,
+    lon: p.lon,
+    type: 'telemetry'
+  }));
+
+  const isTelemetryView = (mode === 'launch_day' || mode === 'post_launch') && telemetryTrack.length > 1;
+  const points = isTelemetryView ? telemetryTrack : contextPoints;
+
+  if (!points.length) {
+    canvas.innerHTML = '<p>No coordinate data available for map preview.</p>';
+    legend.innerHTML = '';
+    return;
+  }
+
+  const projected = projectPoints(points);
+
+  const polyline = projected
+    .map((p) => `${p.x},${p.y}`)
+    .join(' ');
+
   canvas.innerHTML = `
-    <svg class="map-lines" viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
-    ${positioned
+    <svg class="map-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+      ${isTelemetryView ? `<polyline points="${polyline}" class="telemetry-line"/>` : ''}
+    </svg>
+    ${projected
       .map(
         (p) =>
-          `<div class="map-point" style="left:${p.left}%; top:${p.top}%" title="${p.site} (${p.lat.toFixed(3)}, ${p.lon.toFixed(3)})"></div>
-           <div class="map-label" style="left:${p.left}%; top:${p.top}%">${p.site}</div>`
+          `<div class="map-point ${p.type === 'telemetry' ? 'telemetry' : ''}" style="left:${p.x}%; top:${p.y}%" title="${p.label} (${p.lat.toFixed(3)}, ${p.lon.toFixed(3)})"></div>
+           <div class="map-label" style="left:${p.x}%; top:${p.y}%">${p.label}</div>`
       )
       .join('')}
   `;
 
-  legend.innerHTML = `
-    <p><strong>Map preview:</strong> ${positioned.length} coordinate points</p>
-    <ul>
-      ${positioned
-        .map((p) => `<li>${p.site}: ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}</li>`)
-        .join('')}
-    </ul>
-  `;
+  if (isTelemetryView) {
+    legend.innerHTML = `
+      <p><strong>Telemetry map (launch-day style):</strong> ${projected.length} track points</p>
+      <ul>
+        ${(launchTelemetry.events || []).map((e) => `<li>${e.t}: ${e.label}</li>`).join('')}
+      </ul>
+    `;
+  } else {
+    legend.innerHTML = `
+      <p><strong>Context map (non-launch day):</strong> ${projected.length} site points</p>
+      <ul>
+        ${projected
+          .map((p) => `<li>${p.label}: ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}</li>`)
+          .join('')}
+      </ul>
+    `;
+  }
 }
 
 function setupFilters(data, previousSelection = null) {
@@ -272,7 +296,7 @@ function renderDashboard(data) {
 
   renderHealth(data);
   renderFleet(data.vehicles);
-  renderMap(data.map_context);
+  renderMap(data.map_context, data.launch_telemetry, data.mode);
 }
 
 loadDashboard().catch((error) => {

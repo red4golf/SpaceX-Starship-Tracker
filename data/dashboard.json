@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-14T21:24:15.444044+00:00",
+  "generated_at": "2026-04-14T22:01:51.753947+00:00",
   "timezone": "America/Los_Angeles",
   "mode": "normal",
   "cadence": {
@@ -74,8 +74,38 @@
       "lon": -96.4
     }
   ],
+  "launch_telemetry": {
+    "enabled": false,
+    "track": [
+      {
+        "t": "T+00:00",
+        "lat": 25.9971,
+        "lon": -97.1566
+      },
+      {
+        "t": "T+00:45",
+        "lat": 26.2,
+        "lon": -96.9
+      },
+      {
+        "t": "T+01:30",
+        "lat": 26.45,
+        "lon": -96.2
+      }
+    ],
+    "events": [
+      {
+        "t": "T+00:00",
+        "label": "Liftoff"
+      },
+      {
+        "t": "T+01:10",
+        "label": "Max-Q (planned)"
+      }
+    ]
+  },
   "health": {
-    "generated_at": "2026-04-14T21:24:15.444044+00:00",
+    "generated_at": "2026-04-14T22:01:51.753947+00:00",
     "source_count": 2,
     "event_count": 2,
     "stale_after_hours": 12

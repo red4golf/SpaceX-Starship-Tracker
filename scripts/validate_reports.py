@@ -76,6 +76,16 @@ def validate_report(report: dict) -> list[str]:
             if event.get(field):
                 require(parse_iso8601(event[field]), f"{prefix}.{field} must be ISO8601", errors)
 
+    telemetry = report.get("launch_telemetry")
+    if telemetry is not None:
+        require(isinstance(telemetry, dict), "launch_telemetry must be an object", errors)
+        track = telemetry.get("track", []) if isinstance(telemetry, dict) else []
+        require(isinstance(track, list), "launch_telemetry.track must be an array", errors)
+        for idx, point in enumerate(track or []):
+            prefix = f"launch_telemetry.track[{idx}]"
+            require(isinstance(point.get("lat"), (int, float)), f"{prefix}.lat must be numeric", errors)
+            require(isinstance(point.get("lon"), (int, float)), f"{prefix}.lon must be numeric", errors)
+
     map_context = report.get("map_context")
     require(isinstance(map_context, list), "map_context must be an array", errors)
 

@@ -120,6 +120,7 @@ def build_dashboard(report: dict) -> dict:
         "vehicles": vehicles,
         "timeline": timeline,
         "map_context": report["map_context"],
+        "launch_telemetry": report.get("launch_telemetry", {"track": [], "events": []}),
         "health": {
             "generated_at": generated_at,
             "source_count": len({e["source"] for e in timeline}) if timeline else 0,

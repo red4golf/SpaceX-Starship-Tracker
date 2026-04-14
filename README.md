@@ -7,6 +7,7 @@ Public read-only dashboard for **Starship full-stack progress** (Super Heavy + S
 - Fleet overview cards for stack pairs.
 - Mission timeline grouped by day with filter controls (confidence + vehicle).
 - Launch map context with optional coordinates, labeled map points, and a coordinate legend.
+- Map behavior switches by mode: context map on non-launch days, telemetry-style trajectory view on launch day/post-launch when telemetry track data is present.
 - Data health panel with freshness indicator and mode/cadence summary.
 - Auto-refresh polling in browser every 60 seconds when page remains open.
 - Scheduled update workflow (2x daily at 08:00/20:00 PT with DST-safe gating).
