@@ -24,21 +24,51 @@ Standardized milestones list:
 
 ## Local run
 
-From the repository root:
+From the repository root (preferred):
+
+```bash
+python3 scripts/update_dashboard.py
+python3 -m http.server 8080
+```
+
+If the root wrapper exists, this also works:
 
 ```bash
 python3 update_dashboard.py
-python3 -m http.server 8080
 ```
 
 PowerShell (from any directory, using absolute path):
 
 ```powershell
-python "C:\path\to\SpaceX-Starship-Tracker\update_dashboard.py"
+python "C:\path\to\SpaceX-Starship-Tracker\scripts\update_dashboard.py"
 python -m http.server 8080
 ```
 
+One-command PowerShell launcher (runs update then serves on port 8080):
+
+```powershell
+.\start_dashboard.ps1
+```
+
 Then open `http://localhost:8080`.
+
+### Troubleshooting (Windows)
+
+If you see `can't open file ... update_dashboard.py`:
+
+1. Confirm you are inside the cloned folder:
+   ```powershell
+   pwd
+   dir
+   ```
+2. Run the script from `scripts/` explicitly:
+   ```powershell
+   python .\scripts\update_dashboard.py
+   ```
+3. If needed, run with absolute path:
+   ```powershell
+   python "C:\dev\SpaceX-Starship-Tracker\scripts\update_dashboard.py"
+   ```
 
 ## Automation
 
