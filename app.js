@@ -182,6 +182,31 @@ function renderMap(mapContext) {
       return `<p><strong>📍 ${m.site}</strong>${coords}: ${m.description} · <a href="${m.source}" target="_blank" rel="noreferrer">source</a></p>`;
     })
     .join('');
+
+  const canvas = document.getElementById('map-canvas');
+  const points = mapContext.filter((m) => m.lat != null && m.lon != null);
+  if (!points.length) {
+    canvas.innerHTML = '<p>No coordinate data available for map preview.</p>';
+    return;
+  }
+
+  const lats = points.map((p) => p.lat);
+  const lons = points.map((p) => p.lon);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLon = Math.min(...lons);
+  const maxLon = Math.max(...lons);
+
+  const latRange = Math.max(maxLat - minLat, 0.2);
+  const lonRange = Math.max(maxLon - minLon, 0.2);
+
+  canvas.innerHTML = points
+    .map((p) => {
+      const left = ((p.lon - minLon) / lonRange) * 100;
+      const top = 100 - ((p.lat - minLat) / latRange) * 100;
+      return `<div class="map-point" style="left:${left}%; top:${top}%" title="${p.site} (${p.lat.toFixed(3)}, ${p.lon.toFixed(3)})"></div>`;
+    })
+    .join('');
 }
 
 function setupFilters(data, previousSelection = null) {
