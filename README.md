@@ -7,11 +7,11 @@ Public read-only dashboard for **Starship full-stack progress** (Super Heavy + S
 - Fleet overview cards for stack pairs.
 - Mission timeline grouped by day with filter controls (confidence + vehicle).
 - Launch map context with optional coordinates, labeled map points, and a coordinate legend.
-- Map behavior switches by mode: context map on non-launch days, telemetry-style trajectory view on launch day/post-launch when telemetry track data is present (trajectory line, current-point pulse, and telemetry badges).
+- Map behavior switches by mode: context map on non-launch days, telemetry-style trajectory view on launch day/launch-window when telemetry track data is present (trajectory line, current-point pulse, and telemetry badges).
 - Data health panel with freshness indicator and mode/cadence summary.
 - Auto-refresh polling in browser every 60 seconds when page remains open.
 - Scheduled update workflow (2x daily at 08:00/20:00 PT with DST-safe gating).
-- Optional high-frequency post-launch workflow.
+- Optional high-frequency launch-window workflow.
 - Telegram notifier for newly detected timeline events.
 
 ## Data model
@@ -94,7 +94,7 @@ Workflow: `.github/workflows/post-launch-poller.yml`
 
 - Optional high-frequency run every 5 minutes.
 - Only active when repository variable `ENABLE_HIGH_FREQUENCY=true`.
-- Only publishes in `post_launch` mode.
+- Publishes in `launch_day` and `post_launch` modes.
 
 ## Operating model
 

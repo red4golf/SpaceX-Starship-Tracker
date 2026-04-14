@@ -1,4 +1,4 @@
-name: Post-launch High Frequency Poller
+name: Launch Window High Frequency Poller
 
 on:
   schedule:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  post_launch_poll:
+  launch_window_poll:
     if: vars.ENABLE_HIGH_FREQUENCY == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -28,24 +28,24 @@ jobs:
         id: generate
         run: python scripts/update_dashboard.py
 
-      - name: Stop unless in post_launch mode
-        if: steps.generate.outputs.mode != 'post_launch'
+      - name: Stop unless in launch window mode
+        if: steps.generate.outputs.mode != 'launch_day' && steps.generate.outputs.mode != 'post_launch'
         run: |
           echo "Mode is ${{ steps.generate.outputs.mode }}; skipping high-frequency publish."
           exit 0
 
       - name: Commit high-frequency updates
-        if: steps.generate.outputs.mode == 'post_launch'
+        if: steps.generate.outputs.mode == 'launch_day' || steps.generate.outputs.mode == 'post_launch'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/dashboard.json
           git diff --cached --quiet && exit 0
-          git commit -m "chore(data): high-frequency post-launch refresh"
+          git commit -m "chore(data): high-frequency launch-window refresh"
           git push
 
       - name: Telegram notify
-        if: steps.generate.outputs.mode == 'post_launch'
+        if: steps.generate.outputs.mode == 'launch_day' || steps.generate.outputs.mode == 'post_launch'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

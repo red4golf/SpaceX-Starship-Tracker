@@ -24,9 +24,9 @@ Mode is generated into `data/dashboard.json` and emitted in workflow output.
 - Workflow: `Update Starship Dashboard Data`
 - Runs around 08:00 and 20:00 PT with DST-safe gating.
 
-### High frequency post-launch mode
-- Workflow: `Post-launch High Frequency Poller`
-- Runs every 5 minutes, but only commits when mode is `post_launch`.
+### High frequency launch-window mode
+- Workflow: `Launch Window High Frequency Poller`
+- Runs every 5 minutes, but only commits when mode is `launch_day` or `post_launch`.
 - Requires repository variable `ENABLE_HIGH_FREQUENCY=true`.
 
 ## Incident playbook
