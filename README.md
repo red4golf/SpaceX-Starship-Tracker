@@ -24,9 +24,18 @@ Standardized milestones list:
 
 ## Local run
 
+From the repository root:
+
 ```bash
-python3 scripts/update_dashboard.py
+python3 update_dashboard.py
 python3 -m http.server 8080
+```
+
+PowerShell (from any directory, using absolute path):
+
+```powershell
+python "C:\path\to\SpaceX-Starship-Tracker\update_dashboard.py"
+python -m http.server 8080
 ```
 
 Then open `http://localhost:8080`.
