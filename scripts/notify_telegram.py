@@ -34,6 +34,16 @@ def send_message(token: str, chat_id: str, text: str) -> None:
         return
 
 
+def event_key(event: dict) -> tuple:
+    return (
+        event.get("event_id"),
+        event.get("mission"),
+        event.get("vehicle_ref"),
+        event.get("time"),
+        event.get("milestone"),
+    )
+
+
 def main() -> None:
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
@@ -45,12 +55,14 @@ def main() -> None:
     timeline = dashboard.get("timeline", [])
     previous = load_json(LAST_SENT, [])
 
-    prev_keys = {(e.get("time"), e.get("milestone")) for e in previous}
-    new_events = [e for e in timeline if (e.get("time"), e.get("milestone")) not in prev_keys]
+    prev_keys = {event_key(e) for e in previous}
+    new_events = [e for e in timeline if event_key(e) not in prev_keys]
 
     for event in new_events:
         text = (
             f"🚀 {event.get('mission')}\n"
+            f"Event ID: {event.get('event_id')}\n"
+            f"Vehicle: {event.get('vehicle_ref', 'n/a')}\n"
             f"Milestone: {event.get('milestone')}\n"
             f"Confidence: {event.get('confidence')}\n"
             f"Time (UTC): {event.get('time')}\n"

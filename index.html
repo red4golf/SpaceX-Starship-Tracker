@@ -11,6 +11,7 @@
     <header>
       <h1>Starship Full-Stack Tracker</h1>
       <p id="last-updated"></p>
+      <div id="health-status"></div>
     </header>
 
     <main>
@@ -21,7 +22,25 @@
 
       <section class="panel">
         <h2>Mission Timeline</h2>
-        <ol id="mission-timeline" class="timeline"></ol>
+        <div class="filters">
+          <label>
+            Confidence
+            <select id="confidence-filter">
+              <option value="all">All</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </label>
+          <label>
+            Vehicle
+            <select id="vehicle-filter">
+              <option value="all">All</option>
+            </select>
+          </label>
+        </div>
+        <div id="mission-timeline" class="timeline"></div>
       </section>
 
       <section class="panel">

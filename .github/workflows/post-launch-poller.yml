@@ -1,0 +1,52 @@
+name: Post-launch High Frequency Poller
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  post_launch_poll:
+    if: vars.ENABLE_HIGH_FREQUENCY == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate report schema and content
+        run: python scripts/validate_reports.py
+
+      - name: Generate dashboard JSON
+        id: generate
+        run: python scripts/update_dashboard.py
+
+      - name: Stop unless in post_launch mode
+        if: steps.generate.outputs.mode != 'post_launch'
+        run: |
+          echo "Mode is ${{ steps.generate.outputs.mode }}; skipping high-frequency publish."
+          exit 0
+
+      - name: Commit high-frequency updates
+        if: steps.generate.outputs.mode == 'post_launch'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/dashboard.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(data): high-frequency post-launch refresh"
+          git push
+
+      - name: Telegram notify
+        if: steps.generate.outputs.mode == 'post_launch'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/notify_telegram.py

@@ -5,6 +5,9 @@
   --text: #e2e8f0;
   --muted: #94a3b8;
   --accent: #38bdf8;
+  --ok: #22c55e;
+  --warn: #f59e0b;
+  --danger: #ef4444;
 }
 
 * {
@@ -54,12 +57,53 @@ main {
   background: #334155;
 }
 
-.timeline {
+.badge.ok {
+  background: #14532d;
+}
+
+.badge.warn {
+  background: #78350f;
+}
+
+.badge.danger {
+  background: #7f1d1d;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.filters label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.filters select {
+  background: #0b1220;
+  color: var(--text);
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 0.35rem;
+}
+
+.timeline-day {
+  margin-bottom: 1rem;
+}
+
+.timeline-day h3 {
+  margin-bottom: 0.4rem;
+  color: var(--accent);
+}
+
+.timeline-day ol {
   margin: 0;
   padding-left: 1.25rem;
 }
 
-.timeline li {
+.timeline-day li {
   margin-bottom: 0.6rem;
   color: var(--muted);
 }

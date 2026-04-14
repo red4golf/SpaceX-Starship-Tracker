@@ -1,0 +1,31 @@
+name: CI Checks
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "work"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate Python syntax
+        run: python -m py_compile scripts/update_dashboard.py scripts/notify_telegram.py scripts/validate_reports.py update_dashboard.py notify_telegram.py
+
+      - name: Validate report schema/content
+        run: python scripts/validate_reports.py
+
+      - name: Deterministic generation check
+        run: |
+          cp data/dashboard.json /tmp/dashboard.before.json || true
+          DASHBOARD_NOW_UTC=2026-01-01T00:00:00Z python scripts/update_dashboard.py
+          cp data/dashboard.json /tmp/dashboard.after.first.json
+          DASHBOARD_NOW_UTC=2026-01-01T00:00:00Z python scripts/update_dashboard.py
+          cp data/dashboard.json /tmp/dashboard.after.second.json
+          diff -u /tmp/dashboard.after.first.json /tmp/dashboard.after.second.json

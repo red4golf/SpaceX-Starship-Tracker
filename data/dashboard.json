@@ -1,6 +1,12 @@
 {
-  "generated_at": "2026-04-14T19:46:40.839416+00:00",
+  "generated_at": "2026-04-14T21:24:15.444044+00:00",
   "timezone": "America/Los_Angeles",
+  "mode": "normal",
+  "cadence": {
+    "normal": "2x daily",
+    "launch_day": "2x daily + optional manual checks",
+    "post_launch": "high-frequency (recommended 15s polling via local runner)"
+  },
   "mission": "Starship Flight 10",
   "launch": {
     "official_time_utc": null,
@@ -13,27 +19,65 @@
       "ship": "Ship 37",
       "status": "In preparation",
       "next_milestone": {
-        "name": "Static fire",
+        "name": "Ship static fire",
         "confidence": "high",
-        "source": "https://www.nasaspaceflight.com/"
+        "source": "https://www.nasaspaceflight.com/",
+        "source_published_at": "2026-04-13T18:30:00Z",
+        "collected_at": "2026-04-13T19:00:00Z",
+        "collector": "manual",
+        "notes": "Pad and vehicle activity suggest static fire campaign prep."
       },
       "countdown": null
     }
   ],
   "timeline": [
     {
+      "event_id": "s10-stack-ops-20260413",
       "mission": "Starship Flight 10",
       "time": "2026-04-13T19:00:00Z",
-      "milestone": "Stacking operations noted",
+      "milestone": "Full-stack integration",
       "confidence": "high",
-      "source": "https://www.nasaspaceflight.com/"
+      "source": "https://www.nasaspaceflight.com/",
+      "source_published_at": "2026-04-13T18:45:00Z",
+      "collected_at": "2026-04-13T19:00:00Z",
+      "collector": "manual",
+      "notes": "Stacking operations observed at Starbase.",
+      "vehicle_ref": "B16+S37"
+    },
+    {
+      "event_id": "s10-staticfire-window-20260414",
+      "mission": "Starship Flight 10",
+      "time": "2026-04-14T16:00:00Z",
+      "milestone": "Booster static fire",
+      "confidence": "medium",
+      "source": "https://www.cameroncountytx.gov/spacex/",
+      "source_published_at": "2026-04-14T15:30:00Z",
+      "collected_at": "2026-04-14T16:10:00Z",
+      "collector": "manual",
+      "notes": "Road closure windows align with expected static-fire campaign.",
+      "vehicle_ref": "B16"
     }
   ],
   "map_context": [
     {
-      "site": "Starbase",
-      "description": "Primary launch and test site.",
-      "source": "https://www.spacex.com/vehicles/starship/"
+      "site": "Starbase Orbital Launch Mount",
+      "description": "Primary launch and integrated testing area.",
+      "source": "https://www.spacex.com/vehicles/starship/",
+      "lat": 25.9971,
+      "lon": -97.1566
+    },
+    {
+      "site": "Gulf Downrange Corridor",
+      "description": "Representative downrange corridor for ascent and debris notices.",
+      "source": "https://www.faa.gov/",
+      "lat": 25.7,
+      "lon": -96.4
     }
-  ]
+  ],
+  "health": {
+    "generated_at": "2026-04-14T21:24:15.444044+00:00",
+    "source_count": 2,
+    "event_count": 2,
+    "stale_after_hours": 12
+  }
 }
