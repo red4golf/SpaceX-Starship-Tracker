@@ -140,3 +140,33 @@ a {
   border: 2px solid #0f172a;
   box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.35);
 }
+
+.map-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.map-label {
+  position: absolute;
+  transform: translate(8px, -6px);
+  font-size: 0.72rem;
+  color: #bae6fd;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  max-width: 140px;
+}
+
+#map-legend {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+#map-legend ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.2rem;
+}

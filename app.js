@@ -184,9 +184,11 @@ function renderMap(mapContext) {
     .join('');
 
   const canvas = document.getElementById('map-canvas');
+  const legend = document.getElementById('map-legend');
   const points = mapContext.filter((m) => m.lat != null && m.lon != null);
   if (!points.length) {
     canvas.innerHTML = '<p>No coordinate data available for map preview.</p>';
+    legend.innerHTML = '';
     return;
   }
 
@@ -200,13 +202,39 @@ function renderMap(mapContext) {
   const latRange = Math.max(maxLat - minLat, 0.2);
   const lonRange = Math.max(maxLon - minLon, 0.2);
 
-  canvas.innerHTML = points
-    .map((p) => {
-      const left = ((p.lon - minLon) / lonRange) * 100;
-      const top = 100 - ((p.lat - minLat) / latRange) * 100;
-      return `<div class="map-point" style="left:${left}%; top:${top}%" title="${p.site} (${p.lat.toFixed(3)}, ${p.lon.toFixed(3)})"></div>`;
-    })
+  const positioned = points.map((p) => {
+    const left = ((p.lon - minLon) / lonRange) * 100;
+    const top = 100 - ((p.lat - minLat) / latRange) * 100;
+    return { ...p, left, top };
+  });
+
+  const lines = positioned
+    .slice(1)
+    .map(
+      (p, idx) =>
+        `<line x1="${positioned[idx].left}%" y1="${positioned[idx].top}%" x2="${p.left}%" y2="${p.top}%" stroke="rgba(56,189,248,0.5)" stroke-width="2"/>`
+    )
     .join('');
+
+  canvas.innerHTML = `
+    <svg class="map-lines" viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
+    ${positioned
+      .map(
+        (p) =>
+          `<div class="map-point" style="left:${p.left}%; top:${p.top}%" title="${p.site} (${p.lat.toFixed(3)}, ${p.lon.toFixed(3)})"></div>
+           <div class="map-label" style="left:${p.left}%; top:${p.top}%">${p.site}</div>`
+      )
+      .join('')}
+  `;
+
+  legend.innerHTML = `
+    <p><strong>Map preview:</strong> ${positioned.length} coordinate points</p>
+    <ul>
+      ${positioned
+        .map((p) => `<li>${p.site}: ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}</li>`)
+        .join('')}
+    </ul>
+  `;
 }
 
 function setupFilters(data, previousSelection = null) {
