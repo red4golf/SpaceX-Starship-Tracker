@@ -1,14 +1,37 @@
 let dashboardState = null;
+const REFRESH_INTERVAL_MS = 60_000;
 
-async function loadDashboard() {
-  const response = await fetch('data/dashboard.json', { cache: 'no-store' });
+async function fetchDashboardData() {
+  const response = await fetch(`data/dashboard.json?t=${Date.now()}`, { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Unable to load dashboard data');
   }
+  return response.json();
+}
 
-  dashboardState = await response.json();
+async function loadDashboard() {
+  dashboardState = await fetchDashboardData();
   renderDashboard(dashboardState);
   setupFilters(dashboardState);
+  startAutoRefresh();
+}
+
+function startAutoRefresh() {
+  setInterval(async () => {
+    try {
+      const next = await fetchDashboardData();
+      if (next.generated_at !== dashboardState.generated_at) {
+        const prevConfidence = document.getElementById('confidence-filter').value;
+        const prevVehicle = document.getElementById('vehicle-filter').value;
+
+        dashboardState = next;
+        renderDashboard(dashboardState);
+        setupFilters(dashboardState, { confidence: prevConfidence, vehicle: prevVehicle });
+      }
+    } catch (_error) {
+      // Keep current UI; next interval can recover automatically.
+    }
+  }, REFRESH_INTERVAL_MS);
 }
 
 function formatPacificDate(input, includeZone = false) {
@@ -70,7 +93,8 @@ function renderHealth(data) {
       <strong>Mode:</strong> ${data.mode.replace('_', ' ')} ·
       <strong>Cadence:</strong> ${data.cadence[data.mode]} ·
       <strong>Events:</strong> ${health.event_count} ·
-      <strong>Sources:</strong> ${health.source_count}
+      <strong>Sources:</strong> ${health.source_count} ·
+      <strong>Auto-refresh:</strong> every ${REFRESH_INTERVAL_MS / 1000}s
       <span class="badge ${freshness.className}">${freshness.label}</span>
     </p>
   `;
@@ -160,8 +184,14 @@ function renderMap(mapContext) {
     .join('');
 }
 
-function setupFilters(data) {
+function setupFilters(data, previousSelection = null) {
+  const confidenceFilter = document.getElementById('confidence-filter');
   const vehicleFilter = document.getElementById('vehicle-filter');
+
+  const selectedConfidence = previousSelection?.confidence ?? confidenceFilter.value;
+  const selectedVehicle = previousSelection?.vehicle ?? vehicleFilter.value;
+
+  vehicleFilter.innerHTML = '<option value="all">All</option>';
   const refs = [...new Set(data.timeline.map((t) => t.vehicle_ref).filter(Boolean))];
   for (const ref of refs) {
     const option = document.createElement('option');
@@ -170,8 +200,15 @@ function setupFilters(data) {
     vehicleFilter.appendChild(option);
   }
 
-  document.getElementById('confidence-filter').addEventListener('change', () => renderTimeline(data));
-  vehicleFilter.addEventListener('change', () => renderTimeline(data));
+  confidenceFilter.value = ['all', 'confirmed', 'high', 'medium', 'low'].includes(selectedConfidence)
+    ? selectedConfidence
+    : 'all';
+  vehicleFilter.value = refs.includes(selectedVehicle) ? selectedVehicle : 'all';
+
+  confidenceFilter.onchange = () => renderTimeline(data);
+  vehicleFilter.onchange = () => renderTimeline(data);
+
+  renderTimeline(data);
 }
 
 function renderDashboard(data) {
@@ -182,7 +219,6 @@ function renderDashboard(data) {
 
   renderHealth(data);
   renderFleet(data.vehicles);
-  renderTimeline(data);
   renderMap(data.map_context);
 }
 
