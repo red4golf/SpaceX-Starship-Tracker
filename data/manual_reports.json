@@ -1,0 +1,35 @@
+{
+  "mission": "Starship Flight 10",
+  "launch": {
+    "official_time_utc": null,
+    "site": "Starbase, Texas",
+    "source": "https://www.spacex.com/launches/"
+  },
+  "vehicles": [
+    {
+      "booster": "Booster 16",
+      "ship": "Ship 37",
+      "status": "In preparation",
+      "next_milestone": {
+        "name": "Static fire",
+        "confidence": "high",
+        "source": "https://www.nasaspaceflight.com/"
+      }
+    }
+  ],
+  "timeline": [
+    {
+      "time": "2026-04-13T19:00:00Z",
+      "milestone": "Stacking operations noted",
+      "confidence": "high",
+      "source": "https://www.nasaspaceflight.com/"
+    }
+  ],
+  "map_context": [
+    {
+      "site": "Starbase",
+      "description": "Primary launch and test site.",
+      "source": "https://www.spacex.com/vehicles/starship/"
+    }
+  ]
+}

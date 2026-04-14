@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Starship Full-Stack Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Starship Full-Stack Tracker</h1>
+      <p id="last-updated"></p>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>Fleet Overview</h2>
+        <div id="fleet-overview" class="grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Mission Timeline</h2>
+        <ol id="mission-timeline" class="timeline"></ol>
+      </section>
+
+      <section class="panel">
+        <h2>Launch Map Context</h2>
+        <div id="map-context"></div>
+      </section>
+    </main>
+
+    <template id="vehicle-card-template">
+      <article class="card">
+        <h3 class="name"></h3>
+        <p><strong>Status:</strong> <span class="status"></span></p>
+        <p><strong>Next Milestone:</strong> <span class="next-milestone"></span></p>
+        <p><strong>Confidence:</strong> <span class="confidence badge"></span></p>
+        <p><strong>Countdown:</strong> <span class="countdown"></span></p>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
