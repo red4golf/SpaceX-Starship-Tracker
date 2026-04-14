@@ -260,6 +260,18 @@
               },
               "lon": {
                 "type": "number"
+              },
+              "altitude_km": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "speed_kmh": {
+                "type": [
+                  "number",
+                  "null"
+                ]
               }
             },
             "additionalProperties": true

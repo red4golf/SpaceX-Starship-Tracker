@@ -192,6 +192,19 @@ function projectPoints(points) {
   }));
 }
 
+function telemetryTimeToSeconds(value) {
+  if (!value || !value.startsWith('T+')) return Number.POSITIVE_INFINITY;
+  const parts = value.slice(2).split(':').map((p) => Number.parseInt(p, 10));
+  if (parts.some((n) => Number.isNaN(n))) return Number.POSITIVE_INFINITY;
+  if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  }
+  if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+  return Number.POSITIVE_INFINITY;
+}
+
 function renderMap(mapContext, launchTelemetry, mode) {
   const map = document.getElementById('map-context');
   map.innerHTML = mapContext
@@ -211,10 +224,12 @@ function renderMap(mapContext, launchTelemetry, mode) {
     label: p.t || 'Track',
     lat: p.lat,
     lon: p.lon,
-    type: 'telemetry'
+    type: 'telemetry',
+    altitude_km: p.altitude_km,
+    speed_kmh: p.speed_kmh
   }));
 
-  const isTelemetryView = (mode === 'launch_day' || mode === 'post_launch') && telemetryTrack.length > 1;
+  const isTelemetryView = ((mode === 'launch_day' || mode === 'post_launch') || launchTelemetry?.enabled === true) && telemetryTrack.length > 1;
   const points = isTelemetryView ? telemetryTrack : contextPoints;
 
   if (!points.length) {
@@ -243,12 +258,39 @@ function renderMap(mapContext, launchTelemetry, mode) {
   `;
 
   if (isTelemetryView) {
+    const current = points[points.length - 1];
+    const stageSepEvent = (launchTelemetry.events || []).find((e) => /stage\s*separation/i.test(e.label || ''));
+
+    let stageSepBadge = '';
+    if (stageSepEvent) {
+      const stageSepSeconds = telemetryTimeToSeconds(stageSepEvent.t);
+      const nearest = points.reduce((best, p) => {
+        const d = Math.abs(telemetryTimeToSeconds(p.label) - stageSepSeconds);
+        return d < best.diff ? { point: p, diff: d } : best;
+      }, { point: null, diff: Number.POSITIVE_INFINITY }).point;
+
+      if (nearest) {
+        const projectedStage = projectPoints([nearest, ...points])[0];
+        canvas.innerHTML += `<div class="event-marker" style="left:${projectedStage.x}%; top:${projectedStage.y}%" title="${stageSepEvent.label}">SEP</div>`;
+      }
+      stageSepBadge = `<span class="telemetry-badge">${stageSepEvent.t} ${stageSepEvent.label}</span>`;
+    }
+
     legend.innerHTML = `
       <p><strong>Telemetry map (launch-day style):</strong> ${projected.length} track points</p>
+      <div class="telemetry-hud">
+        <span class="telemetry-badge">Current: ${current.label}</span>
+        <span class="telemetry-badge">Altitude: ${current.altitude_km != null ? `${current.altitude_km.toFixed(1)} km` : 'n/a'}</span>
+        <span class="telemetry-badge">Speed: ${current.speed_kmh != null ? `${Math.round(current.speed_kmh)} km/h` : 'n/a'}</span>
+        ${stageSepBadge}
+      </div>
       <ul>
         ${(launchTelemetry.events || []).map((e) => `<li>${e.t}: ${e.label}</li>`).join('')}
       </ul>
     `;
+
+    const currentProjected = projected[projected.length - 1];
+    canvas.innerHTML += `<div class="map-pulse" style="left:${currentProjected.x}%; top:${currentProjected.y}%"></div>`;
   } else {
     legend.innerHTML = `
       <p><strong>Context map (non-launch day):</strong> ${projected.length} site points</p>

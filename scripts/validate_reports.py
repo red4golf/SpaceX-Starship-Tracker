@@ -85,6 +85,10 @@ def validate_report(report: dict) -> list[str]:
             prefix = f"launch_telemetry.track[{idx}]"
             require(isinstance(point.get("lat"), (int, float)), f"{prefix}.lat must be numeric", errors)
             require(isinstance(point.get("lon"), (int, float)), f"{prefix}.lon must be numeric", errors)
+            if point.get("altitude_km") is not None:
+                require(isinstance(point.get("altitude_km"), (int, float)), f"{prefix}.altitude_km must be numeric", errors)
+            if point.get("speed_kmh") is not None:
+                require(isinstance(point.get("speed_kmh"), (int, float)), f"{prefix}.speed_kmh must be numeric", errors)
 
     map_context = report.get("map_context")
     require(isinstance(map_context, list), "map_context must be an array", errors)

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-14T22:01:51.753947+00:00",
+  "generated_at": "2026-04-14T22:26:41.634208+00:00",
   "timezone": "America/Los_Angeles",
   "mode": "normal",
   "cadence": {
@@ -75,22 +75,35 @@
     }
   ],
   "launch_telemetry": {
-    "enabled": false,
+    "enabled": true,
     "track": [
       {
         "t": "T+00:00",
         "lat": 25.9971,
-        "lon": -97.1566
+        "lon": -97.1566,
+        "altitude_km": 0.0,
+        "speed_kmh": 0
       },
       {
         "t": "T+00:45",
         "lat": 26.2,
-        "lon": -96.9
+        "lon": -96.9,
+        "altitude_km": 18.4,
+        "speed_kmh": 2600
       },
       {
         "t": "T+01:30",
         "lat": 26.45,
-        "lon": -96.2
+        "lon": -96.2,
+        "altitude_km": 52.0,
+        "speed_kmh": 5200
+      },
+      {
+        "t": "T+02:15",
+        "lat": 26.7,
+        "lon": -95.4,
+        "altitude_km": 88.5,
+        "speed_kmh": 7300
       }
     ],
     "events": [
@@ -100,12 +113,16 @@
       },
       {
         "t": "T+01:10",
-        "label": "Max-Q (planned)"
+        "label": "Max-Q"
+      },
+      {
+        "t": "T+02:05",
+        "label": "Stage separation"
       }
     ]
   },
   "health": {
-    "generated_at": "2026-04-14T22:01:51.753947+00:00",
+    "generated_at": "2026-04-14T22:26:41.634208+00:00",
     "source_count": 2,
     "event_count": 2,
     "stale_after_hours": 12
