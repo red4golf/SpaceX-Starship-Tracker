@@ -8,14 +8,33 @@ async function loadDashboard() {
   renderDashboard(data);
 }
 
-function renderDashboard(data) {
-  const lastUpdated = new Date(data.generated_at).toLocaleString('en-US', {
+function formatPacificDate(input, includeZone = false) {
+  const date = new Date(input);
+  const options = {
     timeZone: 'America/Los_Angeles',
-    timeZoneName: 'short',
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  });
-  document.getElementById('last-updated').textContent = `Last updated: ${lastUpdated}`;
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+
+  if (includeZone) {
+    options.timeZoneName = 'short';
+  }
+
+  try {
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  } catch (_error) {
+    return date.toISOString();
+  }
+}
+
+function renderDashboard(data) {
+  document.getElementById('last-updated').textContent = `Last updated: ${formatPacificDate(
+    data.generated_at,
+    true
+  )}`;
 
   const container = document.getElementById('fleet-overview');
   const template = document.getElementById('vehicle-card-template');
@@ -35,12 +54,9 @@ function renderDashboard(data) {
   timeline.innerHTML = '';
   for (const event of data.timeline) {
     const li = document.createElement('li');
-    const dateLabel = new Date(event.time).toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles',
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    });
-    li.innerHTML = `<strong>${event.mission}</strong> — ${event.milestone} (${event.confidence}) @ ${dateLabel}`;
+    li.innerHTML = `<strong>${event.mission}</strong> — ${event.milestone} (${event.confidence}) @ ${formatPacificDate(
+      event.time
+    )}`;
     timeline.appendChild(li);
   }
 
