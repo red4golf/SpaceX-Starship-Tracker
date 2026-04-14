@@ -74,7 +74,7 @@ If you see `can't open file ... update_dashboard.py`:
 
 Workflow: `.github/workflows/update-dashboard.yml`
 
-- Runs on schedule twice daily (UTC approximation of 08:00 and 20:00 PT).
+- Runs on schedule with DST/PST-safe gating so updates occur at 08:00 and 20:00 PT.
 - Regenerates `data/dashboard.json`.
 - Commits/pushes only when the feed changes.
 - Sends Telegram notifications if secrets are configured:
