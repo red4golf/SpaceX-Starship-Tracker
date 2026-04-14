@@ -21,6 +21,9 @@ jobs:
       - name: Validate report schema/content
         run: python scripts/validate_reports.py
 
+      - name: Validate frontend syntax
+        run: node --check app.js
+
       - name: Deterministic generation check
         run: |
           cp data/dashboard.json /tmp/dashboard.before.json || true

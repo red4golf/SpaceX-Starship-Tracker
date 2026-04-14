@@ -4,6 +4,13 @@ const STARBASE_CENTER = { lat: 25.9971, lon: -97.1566 };
 let leafletMap = null;
 let leafletLayerGroup = null;
 
+function setStatus(message, level = 'info') {
+  const banner = document.getElementById('status-banner');
+  if (!banner) return;
+  banner.className = `status ${level}`;
+  banner.textContent = message;
+}
+
 async function fetchDashboardData() {
   const response = await fetch(`data/dashboard.json?t=${Date.now()}`, { cache: 'no-store' });
   if (!response.ok) {
@@ -16,6 +23,7 @@ async function loadDashboard() {
   dashboardState = await fetchDashboardData();
   renderDashboard(dashboardState);
   setupFilters(dashboardState);
+  setStatus("Dashboard loaded successfully.", "ok");
   startAutoRefresh();
 }
 
@@ -30,9 +38,10 @@ function startAutoRefresh() {
         dashboardState = next;
         renderDashboard(dashboardState);
         setupFilters(dashboardState, { confidence: prevConfidence, vehicle: prevVehicle });
+        setStatus("New data received and rendered.", "ok");
       }
     } catch (_error) {
-      // Keep current UI; next interval can recover automatically.
+      setStatus("Auto-refresh failed; retaining last known data.", "warn");
     }
   }, REFRESH_INTERVAL_MS);
 }
@@ -212,6 +221,7 @@ function renderStarbaseMap(mapContext) {
 
   const mapInstance = ensureLeafletMap();
   if (!mapInstance) {
+    setStatus("Interactive map unavailable; showing text context only.", "warn");
     return 0;
   }
 
@@ -405,8 +415,5 @@ function renderDashboard(data) {
 }
 
 loadDashboard().catch((error) => {
-  document.body.insertAdjacentHTML(
-    'beforeend',
-    `<p>Failed to load dashboard: ${error.message}. If running locally, use a local server (http://localhost:8080), not file://.</p>`
-  );
+  setStatus(`Failed to load dashboard: ${error.message}. Use http://localhost:8080 (not file://).`, 'error');
 });

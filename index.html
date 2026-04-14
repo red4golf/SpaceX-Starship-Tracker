@@ -9,13 +9,23 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header>
       <h1>Starship Full-Stack Tracker</h1>
       <p id="last-updated"></p>
-      <div id="health-status"></div>
+      <div id="health-status" aria-live="polite"></div>
+      <div id="status-banner" role="status" aria-live="polite"></div>
     </header>
 
-    <main>
+    <main id="main-content">
+      <section class="panel disclaimer" aria-labelledby="methodology-title">
+        <h2 id="methodology-title">Methodology & Disclaimer</h2>
+        <p>
+          This dashboard is an independent tracker and is not an official SpaceX telemetry product.
+          Times and milestones are curated from approved public sources and may lag real-world events.
+        </p>
+      </section>
+
       <section class="panel">
         <h2>Fleet Overview</h2>
         <div id="fleet-overview" class="grid"></div>

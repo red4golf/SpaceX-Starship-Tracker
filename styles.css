@@ -232,3 +232,45 @@ a {
   border-radius: 10px;
   overflow: hidden;
 }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  background: #0ea5e9;
+  color: #001018;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  z-index: 9999;
+}
+
+:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.disclaimer {
+  border: 1px solid #334155;
+}
+
+#status-banner {
+  margin-top: 0.4rem;
+  font-size: 0.92rem;
+}
+
+.status.ok { color: #86efac; }
+.status.warn { color: #fcd34d; }
+.status.error { color: #fca5a5; }
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

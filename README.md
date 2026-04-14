@@ -110,3 +110,10 @@ Workflow: `.github/workflows/ci.yml`
 - Python syntax checks for scripts/wrappers.
 - Report validation checks.
 - Deterministic generator check (fixed clock via `DASHBOARD_NOW_UTC`).
+
+
+## Public trust notes
+
+- This dashboard is an independent tracker and not an official SpaceX telemetry system.
+- Source links and confidence levels should be reviewed before treating an event as confirmed.
+- Use the status banner and freshness indicators to identify stale or degraded data states.
