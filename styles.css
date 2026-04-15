@@ -348,3 +348,11 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+.panel-lite {
+  margin-top: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px dashed #334155;
+  border-radius: 8px;
+  color: var(--muted);
+}

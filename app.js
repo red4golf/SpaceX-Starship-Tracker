@@ -11,6 +11,36 @@ function setStatus(message, level = 'info') {
   banner.textContent = message;
 }
 
+function loadFilterPrefs() {
+  try {
+    return JSON.parse(localStorage.getItem('timeline_filter_prefs') || '{}');
+  } catch (_error) {
+    return {};
+  }
+}
+
+function saveFilterPrefs(prefs) {
+  localStorage.setItem('timeline_filter_prefs', JSON.stringify(prefs));
+}
+
+function renderUpdateDiff(previousData, currentData) {
+  const target = document.getElementById('update-diff');
+  if (!target) return;
+  if (!previousData) {
+    target.innerHTML = '<p>No prior snapshot in this session yet.</p>';
+    return;
+  }
+
+  const prevIds = new Set(previousData.timeline.map((e) => e.event_id));
+  const currIds = new Set(currentData.timeline.map((e) => e.event_id));
+  const newEvents = [...currIds].filter((id) => !prevIds.has(id)).length;
+
+  const prevVehicles = new Map(previousData.vehicles.map((v) => [`${v.booster}+${v.ship}`, v.status]));
+  const changedStatuses = currentData.vehicles.filter((v) => prevVehicles.get(`${v.booster}+${v.ship}`) !== v.status).length;
+
+  target.innerHTML = `<p><strong>Session diff:</strong> +${newEvents} new timeline events · ${changedStatuses} vehicle status changes.</p>`;
+}
+
 function getStoredSeenEvents() {
   try {
     return new Set(JSON.parse(localStorage.getItem('seen_event_ids') || '[]'));
@@ -47,7 +77,7 @@ async function loadDashboard() {
   initTheme();
   dashboardState = await fetchDashboardData();
   renderDashboard(dashboardState);
-  setupFilters(dashboardState);
+  setupFilters(dashboardState, loadFilterPrefs());
   setStatus('Dashboard loaded successfully.', 'ok');
   startAutoRefresh();
 }
@@ -62,8 +92,10 @@ function startAutoRefresh() {
         const prevSearch = document.getElementById('timeline-search').value;
         const prevSort = document.getElementById('timeline-sort').value;
 
+        const previous = dashboardState;
         dashboardState = next;
         renderDashboard(dashboardState);
+        renderUpdateDiff(previous, dashboardState);
         setupFilters(dashboardState, {
           confidence: prevConfidence,
           vehicle: prevVehicle,
@@ -478,10 +510,10 @@ function setupFilters(data, previousSelection = null) {
   const searchInput = document.getElementById('timeline-search');
   const sortSelect = document.getElementById('timeline-sort');
 
-  const selectedConfidence = previousSelection?.confidence ?? confidenceFilter.value;
-  const selectedVehicle = previousSelection?.vehicle ?? vehicleFilter.value;
-  const selectedSearch = previousSelection?.search ?? searchInput.value;
-  const selectedSort = previousSelection?.sort ?? sortSelect.value;
+  const selectedConfidence = previousSelection?.confidence ?? loadFilterPrefs().confidence ?? confidenceFilter.value;
+  const selectedVehicle = previousSelection?.vehicle ?? loadFilterPrefs().vehicle ?? vehicleFilter.value;
+  const selectedSearch = previousSelection?.search ?? loadFilterPrefs().search ?? searchInput.value;
+  const selectedSort = previousSelection?.sort ?? loadFilterPrefs().sort ?? sortSelect.value;
 
   vehicleFilter.innerHTML = '<option value="all">All</option>';
   const refs = [...new Set(data.timeline.map((t) => t.vehicle_ref).filter(Boolean))];
@@ -499,10 +531,20 @@ function setupFilters(data, previousSelection = null) {
   searchInput.value = selectedSearch;
   sortSelect.value = ['newest', 'oldest'].includes(selectedSort) ? selectedSort : 'newest';
 
-  confidenceFilter.onchange = () => renderTimeline(data);
-  vehicleFilter.onchange = () => renderTimeline(data);
-  searchInput.oninput = () => renderTimeline(data);
-  sortSelect.onchange = () => renderTimeline(data);
+  const persistAndRender = () => {
+    saveFilterPrefs({
+      confidence: confidenceFilter.value,
+      vehicle: vehicleFilter.value,
+      search: searchInput.value,
+      sort: sortSelect.value
+    });
+    renderTimeline(data);
+  };
+
+  confidenceFilter.onchange = persistAndRender;
+  vehicleFilter.onchange = persistAndRender;
+  searchInput.oninput = persistAndRender;
+  sortSelect.onchange = persistAndRender;
 
   renderTimeline(data);
 }
@@ -513,6 +555,7 @@ function renderDashboard(data) {
   renderHealth(data);
   renderCommandStrip(data);
   renderSourceAudit(data);
+  renderUpdateDiff(null, data);
   renderFleet(data.vehicles);
   renderMap(data.map_context, data.launch_telemetry, data.mode);
 }
