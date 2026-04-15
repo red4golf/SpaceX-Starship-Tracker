@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/manual_reports.schema.json",
+  "type": "object",
+  "required": [
+    "mission",
+    "launch",
+    "vehicles",
+    "timeline",
+    "map_context"
+  ],
+  "properties": {
+    "mission": {
+      "type": "string",
+      "minLength": 1
+    },
+    "launch": {
+      "type": "object",
+      "required": [
+        "official_time_utc",
+        "site",
+        "source"
+      ],
+      "properties": {
+        "official_time_utc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "livestream_start_utc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "livestream_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "site": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "vehicles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "booster",
+          "ship",
+          "status",
+          "next_milestone"
+        ],
+        "properties": {
+          "booster": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ship": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "minLength": 1
+          },
+          "next_milestone": {
+            "type": "object",
+            "required": [
+              "name",
+              "confidence",
+              "source"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "confidence": {
+                "type": "string",
+                "enum": [
+                  "confirmed",
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_published_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "collected_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "collector": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "notes": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "timeline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "event_id",
+          "time",
+          "milestone",
+          "confidence",
+          "source"
+        ],
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "time": {
+            "type": "string",
+            "minLength": 1
+          },
+          "milestone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_published_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "collected_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "collector": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "vehicle_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "map_context": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "site",
+          "description",
+          "source"
+        ],
+        "properties": {
+          "site": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lat": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "lon": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "launch_telemetry": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "track": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "lat",
+              "lon"
+            ],
+            "properties": {
+              "t": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lat": {
+                "type": "number"
+              },
+              "lon": {
+                "type": "number"
+              },
+              "altitude_km": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "speed_kmh": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "t": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

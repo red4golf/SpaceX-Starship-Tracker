@@ -1,0 +1,115 @@
+{
+  "mission": "Starship Flight 10",
+  "launch": {
+    "official_time_utc": null,
+    "livestream_start_utc": null,
+    "livestream_url": "https://www.spacex.com/launches/",
+    "site": "Starbase, Texas",
+    "source": "https://www.spacex.com/launches/"
+  },
+  "vehicles": [
+    {
+      "booster": "Booster 16",
+      "ship": "Ship 37",
+      "status": "In preparation",
+      "next_milestone": {
+        "name": "Ship static fire",
+        "confidence": "high",
+        "source": "https://www.nasaspaceflight.com/",
+        "source_published_at": "2026-04-13T18:30:00Z",
+        "collected_at": "2026-04-13T19:00:00Z",
+        "collector": "manual",
+        "notes": "Pad and vehicle activity suggest static fire campaign prep."
+      }
+    }
+  ],
+  "timeline": [
+    {
+      "event_id": "s10-stack-ops-20260413",
+      "time": "2026-04-13T19:00:00Z",
+      "milestone": "Full-stack integration",
+      "confidence": "high",
+      "source": "https://www.nasaspaceflight.com/",
+      "source_published_at": "2026-04-13T18:45:00Z",
+      "collected_at": "2026-04-13T19:00:00Z",
+      "collector": "manual",
+      "notes": "Stacking operations observed at Starbase.",
+      "vehicle_ref": "B16+S37"
+    },
+    {
+      "event_id": "s10-staticfire-window-20260414",
+      "time": "2026-04-14T16:00:00Z",
+      "milestone": "Booster static fire",
+      "confidence": "medium",
+      "source": "https://www.cameroncountytx.gov/spacex/",
+      "source_published_at": "2026-04-14T15:30:00Z",
+      "collected_at": "2026-04-14T16:10:00Z",
+      "collector": "manual",
+      "notes": "Road closure windows align with expected static-fire campaign.",
+      "vehicle_ref": "B16"
+    }
+  ],
+  "map_context": [
+    {
+      "site": "Starbase Orbital Launch Mount",
+      "description": "Primary launch and integrated testing area.",
+      "source": "https://www.spacex.com/vehicles/starship/",
+      "lat": 25.9971,
+      "lon": -97.1566
+    },
+    {
+      "site": "Gulf Downrange Corridor",
+      "description": "Representative downrange corridor for ascent and debris notices.",
+      "source": "https://www.faa.gov/",
+      "lat": 25.7,
+      "lon": -96.4
+    }
+  ],
+  "launch_telemetry": {
+    "enabled": true,
+    "track": [
+      {
+        "t": "T+00:00",
+        "lat": 25.9971,
+        "lon": -97.1566,
+        "altitude_km": 0.0,
+        "speed_kmh": 0
+      },
+      {
+        "t": "T+00:45",
+        "lat": 26.2,
+        "lon": -96.9,
+        "altitude_km": 18.4,
+        "speed_kmh": 2600
+      },
+      {
+        "t": "T+01:30",
+        "lat": 26.45,
+        "lon": -96.2,
+        "altitude_km": 52.0,
+        "speed_kmh": 5200
+      },
+      {
+        "t": "T+02:15",
+        "lat": 26.7,
+        "lon": -95.4,
+        "altitude_km": 88.5,
+        "speed_kmh": 7300
+      }
+    ],
+    "events": [
+      {
+        "t": "T+00:00",
+        "label": "Liftoff"
+      },
+      {
+        "t": "T+01:10",
+        "label": "Max-Q"
+      },
+      {
+        "t": "T+02:05",
+        "label": "Stage separation"
+      }
+    ]
+  }
+}

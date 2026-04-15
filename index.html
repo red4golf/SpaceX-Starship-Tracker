@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Starship Full-Stack Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header>
+      <div class="header-row">
+        <h1>Starship Full-Stack Tracker</h1>
+        <button id="theme-toggle" type="button" aria-label="Toggle theme">Toggle theme</button>
+      </div>
+      <p id="last-updated"></p>
+      <div id="health-status" aria-live="polite"></div>
+      <div id="status-banner" role="status" aria-live="polite"></div>
+      <div id="command-strip" class="summary-grid" aria-label="Dashboard summary"></div>
+      <div id="update-diff" class="panel-lite" aria-live="polite"></div>
+    </header>
+
+    <main id="main-content">
+      <section class="panel disclaimer" aria-labelledby="methodology-title">
+        <h2 id="methodology-title">Methodology & Disclaimer</h2>
+        <p>
+          This dashboard is an independent tracker and is not an official SpaceX telemetry product.
+          Times and milestones are curated from approved public sources and may lag real-world events.
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2>Fleet Overview</h2>
+        <div id="fleet-overview" class="grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Mission Timeline</h2>
+        <div class="filters">
+          <label>
+            Confidence
+            <select id="confidence-filter">
+              <option value="all">All</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </label>
+          <label>
+            Vehicle
+            <select id="vehicle-filter">
+              <option value="all">All</option>
+            </select>
+          </label>
+          <label>
+            Search
+            <input id="timeline-search" type="search" placeholder="Search milestone/source/vehicle" />
+          </label>
+          <label>
+            Sort
+            <select id="timeline-sort">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </label>
+        </div>
+        <div id="mission-timeline" class="timeline"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Launch Map Context</h2>
+        <div id="map-context"></div>
+        <div id="live-map" aria-label="Starbase map"></div>
+        <div id="map-canvas" aria-label="Telemetry map preview"></div>
+        <div id="map-legend"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Source Audit</h2>
+        <div id="source-audit"></div>
+      </section>
+    </main>
+
+    <template id="vehicle-card-template">
+      <article class="card">
+        <h3 class="name"></h3>
+        <p><strong>Status:</strong> <span class="status"></span></p>
+        <p><strong>Next Milestone:</strong> <span class="next-milestone"></span></p>
+        <p><strong>Confidence:</strong> <span class="confidence badge"></span></p>
+        <p><strong>Countdown:</strong> <span class="countdown"></span></p>
+      </article>
+    </template>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="app.js"></script>
+  </body>
+</html>

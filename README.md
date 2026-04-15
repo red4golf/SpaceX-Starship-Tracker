@@ -1,1 +1,127 @@
-# SpaceX-Starship-Tracker
+# SpaceX Starship Tracker
+
+Public read-only dashboard for **Starship full-stack progress** (Super Heavy + Ship) with standardized milestones, confidence levels, source provenance, launch countdowns, and launch-mode-aware operating cadence.
+
+## What this includes
+
+- Fleet overview cards for stack pairs.
+- Command-strip summary cards for mission mode, launch status, and confidence mix.
+- Mission timeline grouped by day with filter controls (confidence + vehicle).
+- Launch map context with optional coordinates, labeled map points, and a coordinate legend.
+- Map behavior switches by mode: context map on non-launch days, telemetry-style trajectory view on launch day/launch-window when telemetry track data is present (trajectory line, current-point pulse, and telemetry badges).
+- Data health panel with freshness indicator and mode/cadence summary.
+- Auto-refresh polling in browser every 60 seconds when page remains open.
+- Theme toggle (dark/light), timeline search, sort, and “new since last visit” indicators.
+- Optional livestream-start window (separate from launch time) with its own countdown in the command strip.
+- Livestream card now includes a direct watch link when `launch.livestream_url` (or inferred fallback) is available.
+- Scheduled update workflow (2x daily at 08:00/20:00 PT with DST-safe gating).
+- Optional high-frequency launch-window workflow.
+- Telegram notifier for newly detected timeline events.
+- Source audit panel (domain/event count/latest event).
+
+## Data model
+
+Primary source file:
+- `data/manual_reports.json` — curated source-backed mission updates.
+  - `launch.official_time_utc`: official launch time (mode logic uses this field).
+  - `launch.livestream_start_utc` (optional): livestream start window/time displayed in UI.
+  - `launch.livestream_url` (optional): explicit watch URL for the command-strip livestream card.
+
+Generated file:
+- `data/dashboard.json` — rendered dashboard feed for the web UI.
+
+Standardized milestones list:
+- `data/standardized_milestones.json`
+
+Schema reference:
+- `schemas/manual_reports.schema.json`
+
+## Local run
+
+From the repository root (preferred):
+
+```bash
+python3 scripts/validate_reports.py
+python3 scripts/update_dashboard.py
+python3 -m http.server 8080
+```
+
+If the root wrapper exists, this also works:
+
+```bash
+python3 update_dashboard.py
+```
+
+PowerShell (from any directory, using absolute path):
+
+```powershell
+python "C:\path\to\SpaceX-Starship-Tracker\scripts\validate_reports.py"
+python "C:\path\to\SpaceX-Starship-Tracker\scripts\update_dashboard.py"
+python -m http.server 8080
+```
+
+One-command PowerShell launcher (runs update then serves on port 8080):
+
+```powershell
+.\start_dashboard.ps1
+```
+
+Then open `http://localhost:8080`.
+
+### Troubleshooting (Windows)
+
+If you see `can't open file ... update_dashboard.py`:
+
+1. Confirm you are inside the cloned folder:
+   ```powershell
+   pwd
+   dir
+   ```
+2. Run the script from `scripts/` explicitly:
+   ```powershell
+   python .\scripts\update_dashboard.py
+   ```
+3. If needed, run with absolute path:
+   ```powershell
+   python "C:\dev\SpaceX-Starship-Tracker\scripts\update_dashboard.py"
+   ```
+
+## Automation
+
+Workflow: `.github/workflows/update-dashboard.yml`
+
+- Runs on schedule at 03:00, 04:00, 15:00, and 16:00 UTC (covers both PST/PDT windows without skip gating).
+- Validates report schema/content before generation.
+- Regenerates `data/dashboard.json`.
+- Commits/pushes only when the feed changes.
+- Sends Telegram notifications if secrets are configured:
+  - `TELEGRAM_BOT_TOKEN`
+  - `TELEGRAM_CHAT_ID`
+
+Workflow: `.github/workflows/post-launch-poller.yml`
+
+- Optional high-frequency run every 5 minutes.
+- Only active when repository variable `ENABLE_HIGH_FREQUENCY=true`.
+- Publishes in `launch_day` and `post_launch` modes.
+
+## Operating model
+
+- **normal:** no official launch time.
+- **pre_launch:** launch time exists and is more than 24 hours away.
+- **launch_day:** launch time exists and is within 24 hours.
+- **post_launch:** launch time has passed; high-frequency polling recommended.
+
+## CI checks
+
+Workflow: `.github/workflows/ci.yml`
+
+- Python syntax checks for scripts/wrappers.
+- Report validation checks.
+- Deterministic generator check (fixed clock via `DASHBOARD_NOW_UTC`).
+
+
+## Public trust notes
+
+- This dashboard is an independent tracker and not an official SpaceX telemetry system.
+- Source links and confidence levels should be reviewed before treating an event as confirmed.
+- Use the status banner and freshness indicators to identify stale or degraded data states.

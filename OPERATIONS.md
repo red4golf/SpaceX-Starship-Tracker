@@ -1,0 +1,40 @@
+# Operations Runbook
+
+## Daily operator flow
+
+1. Edit `data/manual_reports.json` with sourced updates.
+2. Run validation:
+   - `python scripts/validate_reports.py`
+3. Regenerate feed:
+   - `python scripts/update_dashboard.py`
+4. Commit and push changes.
+
+## Cadence modes
+
+- `normal`: no official launch time.
+- `pre_launch`: launch time exists and is >24h away.
+- `launch_day`: launch time exists and is within 24h.
+- `post_launch`: launch time has passed.
+
+`launch.livestream_start_utc` is optional and does not affect mode; it only powers the UI livestream window card/countdown.
+Set `launch.livestream_url` to the primary watch page so the card has a direct link before liftoff.
+
+Mode is generated into `data/dashboard.json` and emitted in workflow output.
+
+## GitHub Actions
+
+### Standard schedule
+- Workflow: `Update Starship Dashboard Data`
+- Runs at 03:00, 04:00, 15:00, and 16:00 UTC (covers both PST/PDT windows without in-job gate skips).
+
+### High frequency launch-window mode
+- Workflow: `Launch Window High Frequency Poller`
+- Runs every 5 minutes, but only commits when mode is `launch_day` or `post_launch`.
+- Requires repository variable `ENABLE_HIGH_FREQUENCY=true`.
+
+## Incident playbook
+
+- **Validation fails:** fix `data/manual_reports.json` fields/timestamps/confidence values.
+- **No dashboard updates:** check Actions logs for skipped gate or unchanged feed.
+- **No Telegram alerts:** verify `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` secrets.
+- **Stale data warning in UI:** refresh feed generation and confirm commit/push.

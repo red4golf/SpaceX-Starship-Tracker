@@ -1,0 +1,82 @@
+name: Launch Window High Frequency Poller
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  launch_window_poll:
+    if: vars.ENABLE_HIGH_FREQUENCY == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate report schema and content
+        run: python scripts/validate_reports.py
+
+      - name: Generate dashboard JSON
+        id: generate
+        run: python scripts/update_dashboard.py
+
+      - name: Stop unless in launch window mode
+        if: steps.generate.outputs.mode != 'launch_day' && steps.generate.outputs.mode != 'post_launch'
+        run: |
+          echo "Mode is ${{ steps.generate.outputs.mode }}; skipping high-frequency publish."
+          exit 0
+
+      - name: Commit high-frequency updates
+        if: steps.generate.outputs.mode == 'launch_day' || steps.generate.outputs.mode == 'post_launch'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/dashboard.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(data): high-frequency launch-window refresh"
+          git push
+
+      - name: Telegram notify
+        if: steps.generate.outputs.mode == 'launch_day' || steps.generate.outputs.mode == 'post_launch'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/notify_telegram.py
+
+
+      - name: Write run summary
+        if: always()
+        run: |
+          python - <<'PY_SUM'
+          import json, pathlib
+          f = pathlib.Path('data/dashboard.json')
+          if f.exists():
+              d = json.loads(f.read_text())
+              print(
+                  f"mode: {d.get('mode')}\n"
+                  f"events: {len(d.get('timeline', []))}\n"
+                  f"sources: {d.get('health', {}).get('source_count')}"
+              )
+          else:
+              print('dashboard.json missing')
+          PY_SUM
+
+      - name: Telegram failure alert
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -d "chat_id=${TELEGRAM_CHAT_ID}" \
+              -d "text=⚠️ Workflow failure: ${{ github.workflow }} · run ${{ github.run_id }}"
+          fi
