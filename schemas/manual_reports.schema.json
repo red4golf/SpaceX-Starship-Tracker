@@ -28,6 +28,12 @@
             "null"
           ]
         },
+        "livestream_start_utc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "site": {
           "type": "string",
           "minLength": 1

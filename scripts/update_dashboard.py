@@ -71,7 +71,8 @@ def determine_mode(report: dict) -> str:
 
 def build_dashboard(report: dict) -> dict:
     generated_at = now_utc().isoformat()
-    countdown = format_countdown(report["launch"].get("official_time_utc"))
+    launch_countdown = format_countdown(report["launch"].get("official_time_utc"))
+    livestream_countdown = format_countdown(report["launch"].get("livestream_start_utc"))
     mode = determine_mode(report)
 
     vehicles = []
@@ -82,7 +83,7 @@ def build_dashboard(report: dict) -> dict:
                 "ship": item["ship"],
                 "status": item["status"],
                 "next_milestone": item["next_milestone"],
-                "countdown": countdown,
+                "countdown": launch_countdown,
             }
         )
 
@@ -116,7 +117,11 @@ def build_dashboard(report: dict) -> dict:
             "post_launch": "high-frequency (recommended 15s polling via local runner)",
         },
         "mission": report["mission"],
-        "launch": report["launch"],
+        "launch": {
+            **report["launch"],
+            "countdown": launch_countdown,
+            "livestream_countdown": livestream_countdown,
+        },
         "vehicles": vehicles,
         "timeline": timeline,
         "map_context": report["map_context"],

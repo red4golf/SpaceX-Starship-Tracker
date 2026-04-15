@@ -2,6 +2,7 @@
   "mission": "Starship Flight 10",
   "launch": {
     "official_time_utc": null,
+    "livestream_start_utc": null,
     "site": "Starbase, Texas",
     "source": "https://www.spacex.com/launches/"
   },

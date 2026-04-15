@@ -39,6 +39,12 @@ def validate_report(report: dict) -> list[str]:
             "launch.official_time_utc must be ISO8601",
             errors,
         )
+    if launch.get("livestream_start_utc"):
+        require(
+            parse_iso8601(launch["livestream_start_utc"]),
+            "launch.livestream_start_utc must be ISO8601",
+            errors,
+        )
 
     vehicles = report.get("vehicles")
     require(isinstance(vehicles, list) and len(vehicles) > 0, "vehicles must be a non-empty array", errors)

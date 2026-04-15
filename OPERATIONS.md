@@ -16,6 +16,8 @@
 - `launch_day`: launch time exists and is within 24h.
 - `post_launch`: launch time has passed.
 
+`launch.livestream_start_utc` is optional and does not affect mode; it only powers the UI livestream window card/countdown.
+
 Mode is generated into `data/dashboard.json` and emitted in workflow output.
 
 ## GitHub Actions
