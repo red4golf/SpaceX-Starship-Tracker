@@ -90,7 +90,7 @@ If you see `can't open file ... update_dashboard.py`:
 
 Workflow: `.github/workflows/update-dashboard.yml`
 
-- Runs on schedule with DST/PST-safe gating so updates occur at 08:00 and 20:00 PT.
+- Runs on schedule at 03:00, 04:00, 15:00, and 16:00 UTC (covers both PST/PDT windows without skip gating).
 - Validates report schema/content before generation.
 - Regenerates `data/dashboard.json`.
 - Commits/pushes only when the feed changes.

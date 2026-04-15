@@ -25,7 +25,7 @@ Mode is generated into `data/dashboard.json` and emitted in workflow output.
 
 ### Standard schedule
 - Workflow: `Update Starship Dashboard Data`
-- Runs around 08:00 and 20:00 PT with DST-safe gating.
+- Runs at 03:00, 04:00, 15:00, and 16:00 UTC (covers both PST/PDT windows without in-job gate skips).
 
 ### High frequency launch-window mode
 - Workflow: `Launch Window High Frequency Poller`

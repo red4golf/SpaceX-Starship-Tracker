@@ -2,8 +2,9 @@ name: Update Starship Dashboard Data
 
 on:
   schedule:
-    # Trigger around 08:00 and 20:00 America/Los_Angeles across DST/PST changes.
-    # We run at both possible UTC offsets and gate in-job using local PT hour.
+    # Run at 03:00, 04:00, 15:00 and 16:00 UTC daily.
+    # This intentionally covers both PST/PDT windows without in-job gating,
+    # so each scheduled trigger performs a real update attempt.
     - cron: '0 3,4,15,16 * * *'
   workflow_dispatch:
 
@@ -14,42 +15,22 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - name: Determine if this run matches 08:00/20:00 PT
-        id: gate
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          hour_pt=$(TZ='America/Los_Angeles' date +'%H')
-          if [ "$hour_pt" = "08" ] || [ "$hour_pt" = "20" ]; then
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Checkout
-        if: steps.gate.outputs.should_run == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Python
-        if: steps.gate.outputs.should_run == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Validate report schema and content
-        if: steps.gate.outputs.should_run == 'true'
         run: python scripts/validate_reports.py
 
       - name: Generate dashboard JSON
-        if: steps.gate.outputs.should_run == 'true'
         id: generate
         run: python scripts/update_dashboard.py
 
       - name: Commit data updates
-        if: steps.gate.outputs.should_run == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -59,14 +40,12 @@ jobs:
           git push
 
       - name: Telegram notify
-        if: steps.gate.outputs.should_run == 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/notify_telegram.py
 
       - name: Print mode summary
-        if: steps.gate.outputs.should_run == 'true'
         run: echo "Dashboard mode is ${{ steps.generate.outputs.mode }}"
 
 
