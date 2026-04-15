@@ -17,6 +17,7 @@
 - `post_launch`: launch time has passed.
 
 `launch.livestream_start_utc` is optional and does not affect mode; it only powers the UI livestream window card/countdown.
+Set `launch.livestream_url` to the primary watch page so the card has a direct link before liftoff.
 
 Mode is generated into `data/dashboard.json` and emitted in workflow output.
 

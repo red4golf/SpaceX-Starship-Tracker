@@ -54,6 +54,25 @@ def format_countdown(official_time_utc: str | None) -> str | None:
     return f"T-{days}d {hours:02}h {minutes:02}m {seconds:02}s"
 
 
+def infer_livestream_url(report: dict) -> str | None:
+    explicit = report.get("launch", {}).get("livestream_url")
+    if explicit:
+        return explicit
+
+    launch_source = report.get("launch", {}).get("source")
+    if isinstance(launch_source, str) and launch_source.startswith(("http://", "https://")):
+        if any(host in launch_source for host in ("youtube.com", "youtu.be", "spacex.com", "x.com", "twitter.com")):
+            return launch_source
+
+    for event in report.get("timeline", []):
+        src = event.get("source")
+        if isinstance(src, str) and src.startswith(("http://", "https://")):
+            if any(host in src for host in ("youtube.com", "youtu.be", "spacex.com", "x.com", "twitter.com")):
+                return src
+
+    return None
+
+
 def determine_mode(report: dict) -> str:
     launch_time_str = report["launch"].get("official_time_utc")
     if not launch_time_str:
@@ -73,6 +92,7 @@ def build_dashboard(report: dict) -> dict:
     generated_at = now_utc().isoformat()
     launch_countdown = format_countdown(report["launch"].get("official_time_utc"))
     livestream_countdown = format_countdown(report["launch"].get("livestream_start_utc"))
+    livestream_url = infer_livestream_url(report)
     mode = determine_mode(report)
 
     vehicles = []
@@ -121,6 +141,7 @@ def build_dashboard(report: dict) -> dict:
             **report["launch"],
             "countdown": launch_countdown,
             "livestream_countdown": livestream_countdown,
+            "livestream_url": livestream_url,
         },
         "vehicles": vehicles,
         "timeline": timeline,

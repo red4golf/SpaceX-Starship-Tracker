@@ -13,6 +13,7 @@ Public read-only dashboard for **Starship full-stack progress** (Super Heavy + S
 - Auto-refresh polling in browser every 60 seconds when page remains open.
 - Theme toggle (dark/light), timeline search, sort, and “new since last visit” indicators.
 - Optional livestream-start window (separate from launch time) with its own countdown in the command strip.
+- Livestream card now includes a direct watch link when `launch.livestream_url` (or inferred fallback) is available.
 - Scheduled update workflow (2x daily at 08:00/20:00 PT with DST-safe gating).
 - Optional high-frequency launch-window workflow.
 - Telegram notifier for newly detected timeline events.
@@ -24,6 +25,7 @@ Primary source file:
 - `data/manual_reports.json` — curated source-backed mission updates.
   - `launch.official_time_utc`: official launch time (mode logic uses this field).
   - `launch.livestream_start_utc` (optional): livestream start window/time displayed in UI.
+  - `launch.livestream_url` (optional): explicit watch URL for the command-strip livestream card.
 
 Generated file:
 - `data/dashboard.json` — rendered dashboard feed for the web UI.

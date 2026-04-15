@@ -34,6 +34,13 @@
             "null"
           ]
         },
+        "livestream_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
         "site": {
           "type": "string",
           "minLength": 1

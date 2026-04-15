@@ -181,6 +181,10 @@ function renderCommandStrip(data) {
   const streamStart = data.launch?.livestream_start_utc;
   const streamLabel = streamStart ? formatPacificDate(streamStart, true) : 'TBD';
   const streamCountdown = data.launch?.livestream_countdown ? ` (${data.launch.livestream_countdown})` : '';
+  const livestreamUrl = data.launch?.livestream_url;
+  const livestreamAction = livestreamUrl
+    ? `<a href="${livestreamUrl}" target="_blank" rel="noopener noreferrer">Watch stream ↗</a>`
+    : '<span>Stream link unavailable</span>';
   const confidenceCounts = data.timeline.reduce(
     (acc, item) => {
       acc[item.confidence] = (acc[item.confidence] || 0) + 1;
@@ -193,7 +197,7 @@ function renderCommandStrip(data) {
     <article class="summary-card"><h3>Mode</h3><p>${data.mode}</p></article>
     <article class="summary-card"><h3>Mission</h3><p>${data.mission}</p></article>
     <article class="summary-card"><h3>Launch Time</h3><p>${data.launch.official_time_utc ?? 'TBD'}</p></article>
-    <article class="summary-card"><h3>Livestream</h3><p>${streamLabel}${streamCountdown}</p></article>
+    <article class="summary-card"><h3>Livestream</h3><p>${streamLabel}${streamCountdown}<br>${livestreamAction}</p></article>
     <article class="summary-card"><h3>Confidence Mix</h3><p>C:${confidenceCounts.confirmed} H:${confidenceCounts.high} M:${confidenceCounts.medium} L:${confidenceCounts.low}</p></article>
   `;
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-15T00:51:32.458803+00:00",
+  "generated_at": "2026-04-15T01:02:55.543733+00:00",
   "timezone": "America/Los_Angeles",
   "mode": "normal",
   "cadence": {
@@ -11,6 +11,7 @@
   "launch": {
     "official_time_utc": null,
     "livestream_start_utc": null,
+    "livestream_url": "https://www.spacex.com/launches/",
     "site": "Starbase, Texas",
     "source": "https://www.spacex.com/launches/",
     "countdown": null,
@@ -125,7 +126,7 @@
     ]
   },
   "health": {
-    "generated_at": "2026-04-15T00:51:32.458803+00:00",
+    "generated_at": "2026-04-15T01:02:55.543733+00:00",
     "source_count": 2,
     "event_count": 2,
     "stale_after_hours": 12

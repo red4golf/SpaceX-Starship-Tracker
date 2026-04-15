@@ -45,6 +45,12 @@ def validate_report(report: dict) -> list[str]:
             "launch.livestream_start_utc must be ISO8601",
             errors,
         )
+    if launch.get("livestream_url"):
+        require(
+            isinstance(launch["livestream_url"], str) and launch["livestream_url"].startswith(("http://", "https://")),
+            "launch.livestream_url must be an absolute http(s) URL",
+            errors,
+        )
 
     vehicles = report.get("vehicles")
     require(isinstance(vehicles, list) and len(vehicles) > 0, "vehicles must be a non-empty array", errors)
