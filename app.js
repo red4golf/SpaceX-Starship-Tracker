@@ -11,6 +11,30 @@ function setStatus(message, level = 'info') {
   banner.textContent = message;
 }
 
+function getStoredSeenEvents() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem('seen_event_ids') || '[]'));
+  } catch (_error) {
+    return new Set();
+  }
+}
+
+function storeSeenEvents(ids) {
+  localStorage.setItem('seen_event_ids', JSON.stringify([...ids]));
+}
+
+function initTheme() {
+  const root = document.documentElement;
+  const saved = localStorage.getItem('theme_mode') || 'dark';
+  root.dataset.theme = saved;
+
+  const toggle = document.getElementById('theme-toggle');
+  toggle.addEventListener('click', () => {
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme_mode', root.dataset.theme);
+  });
+}
+
 async function fetchDashboardData() {
   const response = await fetch(`data/dashboard.json?t=${Date.now()}`, { cache: 'no-store' });
   if (!response.ok) {
@@ -20,10 +44,11 @@ async function fetchDashboardData() {
 }
 
 async function loadDashboard() {
+  initTheme();
   dashboardState = await fetchDashboardData();
   renderDashboard(dashboardState);
   setupFilters(dashboardState);
-  setStatus("Dashboard loaded successfully.", "ok");
+  setStatus('Dashboard loaded successfully.', 'ok');
   startAutoRefresh();
 }
 
@@ -34,14 +59,21 @@ function startAutoRefresh() {
       if (next.generated_at !== dashboardState.generated_at) {
         const prevConfidence = document.getElementById('confidence-filter').value;
         const prevVehicle = document.getElementById('vehicle-filter').value;
+        const prevSearch = document.getElementById('timeline-search').value;
+        const prevSort = document.getElementById('timeline-sort').value;
 
         dashboardState = next;
         renderDashboard(dashboardState);
-        setupFilters(dashboardState, { confidence: prevConfidence, vehicle: prevVehicle });
-        setStatus("New data received and rendered.", "ok");
+        setupFilters(dashboardState, {
+          confidence: prevConfidence,
+          vehicle: prevVehicle,
+          search: prevSearch,
+          sort: prevSort
+        });
+        setStatus('New data received and rendered.', 'ok');
       }
     } catch (_error) {
-      setStatus("Auto-refresh failed; retaining last known data.", "warn");
+      setStatus('Auto-refresh failed; retaining last known data.', 'warn');
     }
   }, REFRESH_INTERVAL_MS);
 }
@@ -112,6 +144,57 @@ function renderHealth(data) {
   `;
 }
 
+function renderCommandStrip(data) {
+  const strip = document.getElementById('command-strip');
+  const confidenceCounts = data.timeline.reduce(
+    (acc, item) => {
+      acc[item.confidence] = (acc[item.confidence] || 0) + 1;
+      return acc;
+    },
+    { confirmed: 0, high: 0, medium: 0, low: 0 }
+  );
+
+  strip.innerHTML = `
+    <article class="summary-card"><h3>Mode</h3><p>${data.mode}</p></article>
+    <article class="summary-card"><h3>Mission</h3><p>${data.mission}</p></article>
+    <article class="summary-card"><h3>Launch Time</h3><p>${data.launch.official_time_utc ?? 'TBD'}</p></article>
+    <article class="summary-card"><h3>Confidence Mix</h3><p>C:${confidenceCounts.confirmed} H:${confidenceCounts.high} M:${confidenceCounts.medium} L:${confidenceCounts.low}</p></article>
+  `;
+}
+
+function renderSourceAudit(data) {
+  const audit = document.getElementById('source-audit');
+  const grouped = new Map();
+
+  for (const event of data.timeline) {
+    let host = 'unknown';
+    try {
+      host = new URL(event.source).hostname;
+    } catch (_error) {
+      host = event.source;
+    }
+
+    const row = grouped.get(host) || { count: 0, latest: null };
+    row.count += 1;
+    row.latest = !row.latest || new Date(event.time) > new Date(row.latest) ? event.time : row.latest;
+    grouped.set(host, row);
+  }
+
+  audit.innerHTML = `
+    <table class="audit-table">
+      <thead><tr><th>Source</th><th>Events</th><th>Latest event time</th></tr></thead>
+      <tbody>
+        ${[...grouped.entries()]
+          .map(
+            ([host, row]) =>
+              `<tr><td>${host}</td><td>${row.count}</td><td>${formatPacificDate(row.latest)}</td></tr>`
+          )
+          .join('')}
+      </tbody>
+    </table>
+  `;
+}
+
 function renderFleet(vehicles) {
   const container = document.getElementById('fleet-overview');
   const template = document.getElementById('vehicle-card-template');
@@ -143,16 +226,28 @@ function groupedTimeline(events) {
 function renderTimeline(data) {
   const confidenceFilter = document.getElementById('confidence-filter').value;
   const vehicleFilter = document.getElementById('vehicle-filter').value;
+  const search = document.getElementById('timeline-search').value.trim().toLowerCase();
+  const sortDir = document.getElementById('timeline-sort').value;
 
-  const filtered = data.timeline.filter((event) => {
+  let filtered = data.timeline.filter((event) => {
     const confidenceMatch = confidenceFilter === 'all' || event.confidence === confidenceFilter;
     const vehicleMatch = vehicleFilter === 'all' || event.vehicle_ref === vehicleFilter;
-    return confidenceMatch && vehicleMatch;
+    const haystack = `${event.milestone} ${event.source} ${event.vehicle_ref ?? ''}`.toLowerCase();
+    const searchMatch = !search || haystack.includes(search);
+    return confidenceMatch && vehicleMatch && searchMatch;
+  });
+
+  filtered = filtered.sort((a, b) => {
+    const diff = new Date(b.time) - new Date(a.time);
+    return sortDir === 'newest' ? diff : -diff;
   });
 
   const groups = groupedTimeline(filtered);
   const timeline = document.getElementById('mission-timeline');
   timeline.innerHTML = '';
+
+  const seen = getStoredSeenEvents();
+  const visibleIds = new Set();
 
   for (const [day, events] of groups.entries()) {
     const section = document.createElement('section');
@@ -165,13 +260,16 @@ function renderTimeline(data) {
     const list = document.createElement('ol');
     for (const event of events) {
       const li = document.createElement('li');
+      const isNewVisit = !seen.has(event.event_id);
+      visibleIds.add(event.event_id);
       const newBadge =
         Date.now() - new Date(event.collected_at || event.time).getTime() < 86_400_000
           ? ' <span class="badge ok">NEW</span>'
           : '';
+      const visitBadge = isNewVisit ? ' <span class="badge warn">NEW SINCE LAST VISIT</span>' : '';
       li.innerHTML = `<strong>${event.mission}</strong> · ${event.vehicle_ref ?? 'n/a'} — ${event.milestone} (${event.confidence}) @ ${formatPacificDate(
         event.time
-      )}${newBadge}<br/><small>Source: <a href="${event.source}" target="_blank" rel="noreferrer">link</a>${
+      )}${newBadge}${visitBadge}<br/><small>Source: <a href="${event.source}" target="_blank" rel="noreferrer">link</a>${
         event.notes ? ` · ${event.notes}` : ''
       }</small>`;
       list.appendChild(li);
@@ -184,6 +282,8 @@ function renderTimeline(data) {
   if (!filtered.length) {
     timeline.innerHTML = '<p>No events match current filters.</p>';
   }
+
+  storeSeenEvents(new Set([...seen, ...visibleIds]));
 }
 
 function distanceKm(lat1, lon1, lat2, lon2) {
@@ -221,7 +321,7 @@ function renderStarbaseMap(mapContext) {
 
   const mapInstance = ensureLeafletMap();
   if (!mapInstance) {
-    setStatus("Interactive map unavailable; showing text context only.", "warn");
+    setStatus('Interactive map unavailable; showing text context only.', 'warn');
     return 0;
   }
 
@@ -294,9 +394,6 @@ function renderMap(mapContext, launchTelemetry, mode) {
   const canvas = document.getElementById('map-canvas');
   const legend = document.getElementById('map-legend');
 
-  const contextPoints = mapContext
-    .filter((m) => m.lat != null && m.lon != null)
-    .map((m) => ({ label: m.site, lat: m.lat, lon: m.lon, type: 'site' }));
   const telemetryTrack = (launchTelemetry?.track || []).map((p) => ({
     label: p.t || 'Track',
     lat: p.lat,
@@ -322,9 +419,7 @@ function renderMap(mapContext, launchTelemetry, mode) {
 
   const projected = projectPoints(points);
 
-  const polyline = projected
-    .map((p) => `${p.x},${p.y}`)
-    .join(' ');
+  const polyline = projected.map((p) => `${p.x},${p.y}`).join(' ');
 
   canvas.innerHTML = `
     <svg class="map-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -339,49 +434,54 @@ function renderMap(mapContext, launchTelemetry, mode) {
       .join('')}
   `;
 
-  if (isTelemetryView) {
-    const current = points[points.length - 1];
-    const stageSepEvent = (launchTelemetry.events || []).find((e) => /stage\s*separation/i.test(e.label || ''));
+  const current = points[points.length - 1];
+  const stageSepEvent = (launchTelemetry.events || []).find((e) => /stage\s*separation/i.test(e.label || ''));
 
-    let stageSepBadge = '';
-    if (stageSepEvent) {
-      const stageSepSeconds = telemetryTimeToSeconds(stageSepEvent.t);
-      const nearest = points.reduce((best, p) => {
+  let stageSepBadge = '';
+  if (stageSepEvent) {
+    const stageSepSeconds = telemetryTimeToSeconds(stageSepEvent.t);
+    const nearest = points.reduce(
+      (best, p) => {
         const d = Math.abs(telemetryTimeToSeconds(p.label) - stageSepSeconds);
         return d < best.diff ? { point: p, diff: d } : best;
-      }, { point: null, diff: Number.POSITIVE_INFINITY }).point;
+      },
+      { point: null, diff: Number.POSITIVE_INFINITY }
+    ).point;
 
-      if (nearest) {
-        const projectedStage = projectPoints([nearest, ...points])[0];
-        canvas.innerHTML += `<div class="event-marker" style="left:${projectedStage.x}%; top:${projectedStage.y}%" title="${stageSepEvent.label}">SEP</div>`;
-      }
-      stageSepBadge = `<span class="telemetry-badge">${stageSepEvent.t} ${stageSepEvent.label}</span>`;
+    if (nearest) {
+      const projectedStage = projectPoints([nearest, ...points])[0];
+      canvas.innerHTML += `<div class="event-marker" style="left:${projectedStage.x}%; top:${projectedStage.y}%" title="${stageSepEvent.label}">SEP</div>`;
     }
-
-    legend.innerHTML = `
-      <p><strong>Telemetry map (launch-day style):</strong> ${projected.length} track points</p>
-      <div class="telemetry-hud">
-        <span class="telemetry-badge">Current: ${current.label}</span>
-        <span class="telemetry-badge">Altitude: ${current.altitude_km != null ? `${current.altitude_km.toFixed(1)} km` : 'n/a'}</span>
-        <span class="telemetry-badge">Speed: ${current.speed_kmh != null ? `${Math.round(current.speed_kmh)} km/h` : 'n/a'}</span>
-        ${stageSepBadge}
-      </div>
-      <ul>
-        ${(launchTelemetry.events || []).map((e) => `<li>${e.t}: ${e.label}</li>`).join('')}
-      </ul>
-    `;
-
-    const currentProjected = projected[projected.length - 1];
-    canvas.innerHTML += `<div class="map-pulse" style="left:${currentProjected.x}%; top:${currentProjected.y}%"></div>`;
+    stageSepBadge = `<span class="telemetry-badge">${stageSepEvent.t} ${stageSepEvent.label}</span>`;
   }
+
+  legend.innerHTML = `
+    <p><strong>Telemetry map (launch-day style):</strong> ${projected.length} track points</p>
+    <div class="telemetry-hud">
+      <span class="telemetry-badge">Current: ${current.label}</span>
+      <span class="telemetry-badge">Altitude: ${current.altitude_km != null ? `${current.altitude_km.toFixed(1)} km` : 'n/a'}</span>
+      <span class="telemetry-badge">Speed: ${current.speed_kmh != null ? `${Math.round(current.speed_kmh)} km/h` : 'n/a'}</span>
+      ${stageSepBadge}
+    </div>
+    <ul>
+      ${(launchTelemetry.events || []).map((e) => `<li>${e.t}: ${e.label}</li>`).join('')}
+    </ul>
+  `;
+
+  const currentProjected = projected[projected.length - 1];
+  canvas.innerHTML += `<div class="map-pulse" style="left:${currentProjected.x}%; top:${currentProjected.y}%"></div>`;
 }
 
 function setupFilters(data, previousSelection = null) {
   const confidenceFilter = document.getElementById('confidence-filter');
   const vehicleFilter = document.getElementById('vehicle-filter');
+  const searchInput = document.getElementById('timeline-search');
+  const sortSelect = document.getElementById('timeline-sort');
 
   const selectedConfidence = previousSelection?.confidence ?? confidenceFilter.value;
   const selectedVehicle = previousSelection?.vehicle ?? vehicleFilter.value;
+  const selectedSearch = previousSelection?.search ?? searchInput.value;
+  const selectedSort = previousSelection?.sort ?? sortSelect.value;
 
   vehicleFilter.innerHTML = '<option value="all">All</option>';
   const refs = [...new Set(data.timeline.map((t) => t.vehicle_ref).filter(Boolean))];
@@ -396,20 +496,23 @@ function setupFilters(data, previousSelection = null) {
     ? selectedConfidence
     : 'all';
   vehicleFilter.value = refs.includes(selectedVehicle) ? selectedVehicle : 'all';
+  searchInput.value = selectedSearch;
+  sortSelect.value = ['newest', 'oldest'].includes(selectedSort) ? selectedSort : 'newest';
 
   confidenceFilter.onchange = () => renderTimeline(data);
   vehicleFilter.onchange = () => renderTimeline(data);
+  searchInput.oninput = () => renderTimeline(data);
+  sortSelect.onchange = () => renderTimeline(data);
 
   renderTimeline(data);
 }
 
 function renderDashboard(data) {
-  document.getElementById('last-updated').textContent = `Last updated: ${formatPacificDate(
-    data.generated_at,
-    true
-  )}`;
+  document.getElementById('last-updated').textContent = `Last updated: ${formatPacificDate(data.generated_at, true)}`;
 
   renderHealth(data);
+  renderCommandStrip(data);
+  renderSourceAudit(data);
   renderFleet(data.vehicles);
   renderMap(data.map_context, data.launch_telemetry, data.mode);
 }

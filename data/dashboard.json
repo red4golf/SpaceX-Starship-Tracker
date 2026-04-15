@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-14T23:34:30.813437+00:00",
+  "generated_at": "2026-04-15T00:13:23.727508+00:00",
   "timezone": "America/Los_Angeles",
   "mode": "normal",
   "cadence": {
@@ -122,7 +122,7 @@
     ]
   },
   "health": {
-    "generated_at": "2026-04-14T23:34:30.813437+00:00",
+    "generated_at": "2026-04-15T00:13:23.727508+00:00",
     "source_count": 2,
     "event_count": 2,
     "stale_after_hours": 12

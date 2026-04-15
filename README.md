@@ -5,14 +5,17 @@ Public read-only dashboard for **Starship full-stack progress** (Super Heavy + S
 ## What this includes
 
 - Fleet overview cards for stack pairs.
+- Command-strip summary cards for mission mode, launch status, and confidence mix.
 - Mission timeline grouped by day with filter controls (confidence + vehicle).
 - Launch map context with optional coordinates, labeled map points, and a coordinate legend.
 - Map behavior switches by mode: context map on non-launch days, telemetry-style trajectory view on launch day/launch-window when telemetry track data is present (trajectory line, current-point pulse, and telemetry badges).
 - Data health panel with freshness indicator and mode/cadence summary.
 - Auto-refresh polling in browser every 60 seconds when page remains open.
+- Theme toggle (dark/light), timeline search, sort, and “new since last visit” indicators.
 - Scheduled update workflow (2x daily at 08:00/20:00 PT with DST-safe gating).
 - Optional high-frequency launch-window workflow.
 - Telegram notifier for newly detected timeline events.
+- Source audit panel (domain/event count/latest event).
 
 ## Data model
 

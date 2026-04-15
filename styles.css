@@ -10,6 +10,15 @@
   --danger: #ef4444;
 }
 
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f1f5f9;
+  --panel: #ffffff;
+  --text: #0f172a;
+  --muted: #334155;
+  --accent: #0369a1;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -26,6 +35,21 @@ header {
   border-bottom: 1px solid #334155;
 }
 
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+#theme-toggle {
+  background: #0b1220;
+  border: 1px solid #334155;
+  color: var(--text);
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+}
+
 main {
   padding: 1.5rem;
   display: grid;
@@ -36,6 +60,31 @@ main {
   background: var(--panel);
   border-radius: 12px;
   padding: 1rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.summary-card {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 0.55rem;
+  background: color-mix(in oklab, var(--panel) 88%, black 12%);
+}
+
+.summary-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.summary-card p {
+  margin: 0;
+  font-weight: 600;
 }
 
 .grid {
@@ -81,7 +130,8 @@ main {
   gap: 0.35rem;
 }
 
-.filters select {
+.filters select,
+.filters input {
   background: #0b1220;
   color: var(--text);
   border: 1px solid #334155;
@@ -206,8 +256,14 @@ a {
 }
 
 @keyframes pulse {
-  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
 }
 
 .telemetry-hud {
@@ -231,6 +287,18 @@ a {
   border: 1px solid #334155;
   border-radius: 10px;
   overflow: hidden;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.audit-table th,
+.audit-table td {
+  border-bottom: 1px solid #334155;
+  padding: 0.4rem;
+  text-align: left;
 }
 
 .skip-link {
@@ -263,9 +331,15 @@ a {
   font-size: 0.92rem;
 }
 
-.status.ok { color: #86efac; }
-.status.warn { color: #fcd34d; }
-.status.error { color: #fca5a5; }
+.status.ok {
+  color: #86efac;
+}
+.status.warn {
+  color: #fcd34d;
+}
+.status.error {
+  color: #fca5a5;
+}
 
 @media (prefers-reduced-motion: reduce) {
   * {

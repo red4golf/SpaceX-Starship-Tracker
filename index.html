@@ -11,10 +11,14 @@
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header>
-      <h1>Starship Full-Stack Tracker</h1>
+      <div class="header-row">
+        <h1>Starship Full-Stack Tracker</h1>
+        <button id="theme-toggle" type="button" aria-label="Toggle theme">Toggle theme</button>
+      </div>
       <p id="last-updated"></p>
       <div id="health-status" aria-live="polite"></div>
       <div id="status-banner" role="status" aria-live="polite"></div>
+      <div id="command-strip" class="summary-grid" aria-label="Dashboard summary"></div>
     </header>
 
     <main id="main-content">
@@ -50,6 +54,17 @@
               <option value="all">All</option>
             </select>
           </label>
+          <label>
+            Search
+            <input id="timeline-search" type="search" placeholder="Search milestone/source/vehicle" />
+          </label>
+          <label>
+            Sort
+            <select id="timeline-sort">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </label>
         </div>
         <div id="mission-timeline" class="timeline"></div>
       </section>
@@ -60,6 +75,11 @@
         <div id="live-map" aria-label="Starbase map"></div>
         <div id="map-canvas" aria-label="Telemetry map preview"></div>
         <div id="map-legend"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Source Audit</h2>
+        <div id="source-audit"></div>
       </section>
     </main>
 
